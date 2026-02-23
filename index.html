@@ -70,6 +70,7 @@
       transition:transform .08s ease, background .18s ease, border-color .18s ease;
       user-select:none;
       font-weight:650;
+      white-space:nowrap;
     }
     .btn:hover{background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.18)}
     .btn:active{transform:translateY(1px)}
@@ -100,7 +101,6 @@
       font-size:13px;
     }
     .dot{width:8px; height:8px; border-radius:50%; background:var(--brand2)}
-
     h1{margin:12px 0 8px; font-size:38px; line-height:1.05; letter-spacing:-.6px}
     h2{margin:0; font-size:22px; letter-spacing:-.2px}
     .sub{color:var(--muted); font-size:16px; max-width:74ch}
@@ -135,7 +135,6 @@
       white-space:nowrap;
     }
 
-    /* Budget UI */
     .appWrap{display:grid; grid-template-columns:1fr; gap:14px}
     .appHeader{display:flex; gap:12px; flex-wrap:wrap; justify-content:space-between; align-items:flex-start}
     .inputs{display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:10px}
@@ -189,24 +188,28 @@
 
     .danger{color:rgba(239,68,68,.95)}
     .success{color:rgba(34,197,94,.95)}
+    .warn{color:rgba(245,158,11,.95)}
 
     footer{margin-top:24px; color:var(--muted2); font-size:13px}
     .footRow{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; padding-top:16px; border-top:1px solid rgba(255,255,255,.08)}
 
-    /* Login modal */
     #loginModal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.55); backdrop-filter:blur(8px); z-index:60}
+
+    .pillRow{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .small{font-size:12px; color:var(--muted2); margin:6px 0 0}
 
     @media (max-width: 980px){
       h1{font-size:34px}
       .appMain{grid-template-columns:1fr}
       .inputs{grid-template-columns:repeat(2, 1fr)}
       .grid2{grid-template-columns:1fr}
+      .grid3{grid-template-columns:1fr}
     }
     @media (max-width: 560px){
       .inputs{grid-template-columns:1fr}
       .navlinks{display:none}
     }
-  
+
     button:disabled{opacity:.55; cursor:not-allowed}
     input:disabled, select:disabled{opacity:.55; cursor:not-allowed}
   </style>
@@ -240,13 +243,13 @@
 
   <main>
     <div class="container">
-
       <section class="heroCard section" id="home" style="margin-top:16px;">
         <div class="kicker"><span class="dot" aria-hidden="true"></span> Built for NC State students</div>
         <h1>Know your budget.<br/>Find things to do that fit it.</h1>
-        <p class="sub">Scroll to try the live demos below. Create an account to save your own budget on this device.</p>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+        <p class="sub">Scroll to try the live demos below. Create an account to save your budget + saved events on this device.</p>
+        <div class="pillRow" style="margin-top:12px;">
           <span class="tag">Live demos below ↓</span>
+          <span class="tag" id="previewLimitPill" style="margin:0; background:rgba(245,158,11,.14); border-color:rgba(245,158,11,.22);">Preview limit: 3 custom transactions</span>
         </div>
       </section>
 
@@ -262,7 +265,7 @@
           <div class="card">
             <div class="tag" style="background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22)">Events demo</div>
             <h3>Interactive events</h3>
-            <p>Filter example campus and Raleigh events to find options that fit your budget.</p>
+            <p>Filter example campus and Raleigh events — and optionally hide events that exceed your remaining budget.</p>
             <div style="height:12px"></div>
             <a class="btn" href="#events" style="width:fit-content;">Scroll to events ↓</a>
           </div>
@@ -274,7 +277,7 @@
           <div>
             <h2>Budgeting demo</h2>
             <p>Preview starts with common student expenses. Log in to keep your own budget.</p>
-            <p style="margin:6px 0 0; color:var(--muted2); font-size:12px;">Preview is interactive, but limited (add up to <b>3</b> custom transactions). Create an account for unlimited entries and persistent saving.</p>
+            <p class="small">Preview is interactive, but limited (up to <b>3</b> custom adds). Create an account for unlimited entries + persistent saving.</p>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <button class="btn" id="seedBtn" type="button">Load student example</button>
@@ -288,6 +291,7 @@
             <div class="left">
               <h3 style="margin:0 0 6px; font-size:18px;">Budget Tracker</h3>
               <p style="margin:0; color:var(--muted); font-size:14px;">Use the form below to add <b>Income</b> or <b>Expenses</b>.</p>
+              <p id="limitHint" class="small"></p>
             </div>
             <div class="right" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
               <div class="tag" id="saveStatus" style="margin:0; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">Preview data</div>
@@ -340,7 +344,7 @@
             <div class="sectionHead" style="margin:0;">
               <div>
                 <h3 style="margin:0; font-size:16px;">Statement scan (demo)</h3>
-                <p style="margin:4px 0 0; color:var(--muted); font-size:13px;">Upload a screenshot/photo of a statement line item. Preview shows the workflow; sign in to enable uploads and prefill.</p>
+                <p style="margin:4px 0 0; color:var(--muted); font-size:13px;">Preview shows the workflow; sign in to enable uploads and prefill.</p>
               </div>
               <button class="btn" id="extractBtn" type="button">Prefill from image</button>
             </div>
@@ -350,7 +354,9 @@
                 <div style="border:1px dashed rgba(255,255,255,.22); border-radius:var(--radius); padding:14px; background:rgba(10,16,28,.35);">
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
                     <div>
-                      <div style="font-weight:700;">Upload statement image <span class="tag" style="margin:0 0 0 8px; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">Requires login</span></div>
+                      <div style="font-weight:700;">Upload statement image
+                        <span class="tag" style="margin:0 0 0 8px; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">Requires login</span>
+                      </div>
                       <div style="color:var(--muted2); font-size:12px;">PNG/JPG • stored locally</div>
                     </div>
                     <input id="stmtFile" type="file" accept="image/*" />
@@ -418,7 +424,7 @@
         <div class="sectionHead">
           <div>
             <h2>Events demo</h2>
-            <p>Three example events you can swap for real listings later.</p>
+            <p>Example events now have estimated costs + a budget-aware filter.</p>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
             <div class="tag" style="margin:0; background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22)">Raleigh + NCSU</div>
@@ -429,6 +435,44 @@
             </select>
           </div>
         </div>
+
+        <div class="grid2" style="margin-bottom:14px;">
+          <div class="card">
+            <div class="tag" style="background:rgba(245,158,11,.14); border-color:rgba(245,158,11,.22)">Budget-aware filters</div>
+            <div style="font-weight:760; margin-bottom:6px;">Estimated event budget</div>
+            <div class="small">Slide to set what “ticketed” means. Toggle to hide events you can’t afford (based on your <b>Net</b>).</div>
+
+            <div style="height:10px"></div>
+
+            <div class="grid2">
+              <div class="field">
+                <label for="ticketMax">Ticketed cost (estimate)</label>
+                <input id="ticketMax" type="range" min="5" max="120" step="5" value="35" />
+                <div class="small">Ticket estimate: <b id="ticketMaxLabel">$35</b></div>
+              </div>
+              <div class="field">
+                <label for="onlyAffordable">Only show affordable</label>
+                <select id="onlyAffordable">
+                  <option value="off" selected>Off</option>
+                  <option value="on">On</option>
+                </select>
+                <div class="small">Affordable = event cost ≤ your <b>Net</b>.</div>
+              </div>
+            </div>
+
+            <div style="height:10px"></div>
+            <div class="tag" id="netForEvents" style="margin:0; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">Net: $0.00</div>
+          </div>
+
+          <div class="card">
+            <div class="tag" style="background:rgba(34,197,94,.14); border-color:rgba(34,197,94,.22)">Saved events</div>
+            <h3 style="margin:0 0 6px; font-size:16px;">Your saved list</h3>
+            <p style="margin:0; color:var(--muted); font-size:14px;">Log in to save events here (per account, on this device).</p>
+            <div style="height:12px"></div>
+            <div id="savedEvents" style="display:flex; flex-direction:column; gap:10px;"></div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="grid3" id="activityCards"></div>
         </div>
@@ -503,7 +547,6 @@
     const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
     const escapeHtml = (str) => String(str || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
-    // Auth (local demo)
     const AUTH_KEY = 'spendingscout_auth_v1';
     const USERS_KEY = 'spendingscout_users_v1';
 
@@ -515,14 +558,65 @@
       if(a?.email) return 'spendingscout_budget_user_' + a.email.toLowerCase();
       return 'spendingscout_budget_preview_v1';
     }
-    function budgetStore(){
-      // Preview: keep it interactive but not fully persistent
-      return isLoggedIn() ? localStorage : sessionStorage;
+    function eventsKey(){
+      const a = getAuth();
+      if(a?.email) return 'spendingscout_events_user_' + a.email.toLowerCase();
+      return 'spendingscout_events_preview_v1';
+    }
+
+    function budgetStore(){ return isLoggedIn() ? localStorage : sessionStorage; }
+    function eventsStore(){ return isLoggedIn() ? localStorage : sessionStorage; }
+
+    const PREVIEW_CUSTOM_LIMIT = 3;
+    function countCustomAdds(){ return items.filter(x => !x.seeded).length; }
+
+    function openLogin(){ const m = $('loginModal'); if(m) m.style.display='flex'; }
+    function closeLogin(){ const m = $('loginModal'); if(m) m.style.display='none'; }
+
+    function loadBudget(){
+      try {
+        const raw = budgetStore().getItem(budgetKey());
+        return raw ? (JSON.parse(raw) || []) : [];
+      } catch { return []; }
+    }
+    function saveBudget(list){
+      budgetStore().setItem(budgetKey(), JSON.stringify(list));
+      updateAuthUI();
+    }
+
+    function loadSavedEvents(){
+      try {
+        const raw = eventsStore().getItem(eventsKey());
+        return raw ? (JSON.parse(raw) || []) : [];
+      } catch { return []; }
+    }
+    function saveSavedEvents(list){
+      eventsStore().setItem(eventsKey(), JSON.stringify(list));
+      updateAuthUI();
+    }
+
+    let items = loadBudget();
+    let saved = loadSavedEvents();
+
+    function seed(){
+      const now = Date.now();
+      items = [
+        { id: uid(), ts: now-86400000*1, type:'income', category:'Other', note:'Part-time job paycheck', amount:260, seeded:true },
+        { id: uid(), ts: now-86400000*1, type:'expense', category:'Food', note:'Groceries', amount:44.18, seeded:true },
+        { id: uid(), ts: now-86400000*1, type:'expense', category:'Food', note:'Dining hall / takeout', amount:18.75, seeded:true },
+        { id: uid(), ts: now-86400000*2, type:'expense', category:'Transportation', note:'Gas', amount:32.70, seeded:true },
+        { id: uid(), ts: now-86400000*2, type:'expense', category:'Subscriptions', note:'Spotify', amount:11.99, seeded:true },
+        { id: uid(), ts: now-86400000*3, type:'expense', category:'School', note:'Textbook / supplies', amount:27.50, seeded:true },
+        { id: uid(), ts: now-86400000*4, type:'expense', category:'Entertainment', note:'Movie ticket', amount:13.50, seeded:true }
+      ];
+      saveBudget(items);
+      renderBudget();
+      renderActivities();
     }
 
     function updateAuthUI(){
-      const pill = $('authPill');
       const a = getAuth();
+      const pill = $('authPill');
       if(pill) pill.textContent = a?.email ? ('Logged in: ' + a.email) : 'Preview';
 
       const su = $('openSignupTop');
@@ -531,17 +625,6 @@
       if(a?.email){
         if(su) su.style.display='none';
         if(li){ li.textContent='Log out'; li.classList.remove('primary'); }
-      const stmtFile = $('stmtFile');
-      const extractBtn = $('extractBtn');
-      if(stmtFile){ stmtFile.disabled = !a?.email; }
-      if(extractBtn){ extractBtn.disabled = !a?.email; }
-      // Event save buttons (rendered in Events section)
-      document.querySelectorAll('[data-save]').forEach((b)=>{
-        b.disabled = !a?.email;
-        b.title = a?.email ? 'Save event' : 'Requires login';
-      });
-
-
       } else {
         if(su) su.style.display='inline-flex';
         if(li){ li.textContent='Log in'; li.classList.add('primary'); }
@@ -549,7 +632,7 @@
 
       const saveStatus = $('saveStatus');
       if(saveStatus){
-        saveStatus.textContent = a?.email ? 'Your budget' : 'Preview (session)';
+        saveStatus.textContent = a?.email ? 'Your budget (saved)' : 'Preview (session)';
         saveStatus.style.background = a?.email ? 'rgba(34,197,94,.14)' : 'rgba(255,255,255,.08)';
         saveStatus.style.borderColor = a?.email ? 'rgba(34,197,94,.22)' : 'rgba(255,255,255,.12)';
       }
@@ -557,22 +640,48 @@
       const syncBtn = $('syncBtn');
       if(syncBtn){
         syncBtn.disabled = !a?.email;
-        syncBtn.style.opacity = a?.email ? '1' : '.55';
-        syncBtn.style.cursor = a?.email ? 'pointer' : 'not-allowed';
+        syncBtn.title = a?.email ? 'Sync (demo)' : 'Requires login';
       }
+
+      const stmtFile = $('stmtFile');
+      const extractBtn = $('extractBtn');
+      if(stmtFile) stmtFile.disabled = !a?.email;
+      if(extractBtn) extractBtn.disabled = !a?.email;
+
+      const limitHint = $('limitHint');
+      const addBtn = $('addBtn');
+      const previewPill = $('previewLimitPill');
+      if(!a?.email){
+        const remaining = Math.max(0, PREVIEW_CUSTOM_LIMIT - countCustomAdds());
+        if(limitHint) limitHint.innerHTML = `Preview mode: <b>${remaining}</b> custom add(s) left. Log in for unlimited.`;
+        if(previewPill) previewPill.style.display = 'inline-flex';
+        if(addBtn) addBtn.disabled = (remaining <= 0);
+      } else {
+        if(limitHint) limitHint.textContent = 'Logged in: unlimited adds + saving enabled.';
+        if(previewPill) previewPill.style.display = 'none';
+        if(addBtn) addBtn.disabled = false;
+      }
+
+      document.querySelectorAll('[data-save]').forEach((b)=>{
+        b.disabled = !a?.email;
+        b.title = a?.email ? 'Save event' : 'Requires login';
+      });
+
+      renderSavedEvents();
     }
 
     function setAuth(obj){
       if(obj) localStorage.setItem(AUTH_KEY, JSON.stringify(obj));
       else localStorage.removeItem(AUTH_KEY);
-      items = load();
+
+      items = loadBudget();
+      saved = loadSavedEvents();
+
       if(items.length === 0 && !isLoggedIn()) seed();
       renderBudget();
+      renderActivities();
       updateAuthUI();
     }
-
-    function openLogin(){ const m = $('loginModal'); if(m) m.style.display='flex'; }
-    function closeLogin(){ const m = $('loginModal'); if(m) m.style.display='none'; }
 
     $('openSignupTop')?.addEventListener('click', ()=>{ openLogin(); $('email')?.focus(); });
     $('openLoginTop')?.addEventListener('click', ()=>{
@@ -592,10 +701,13 @@
       users.push({ email, pw });
       localStorage.setItem(USERS_KEY, JSON.stringify(users));
       setAuth({ email, ts: Date.now() });
+
       items = [];
-      save(items);
-      renderBudget();
-      closeLogin();
+      saveBudget(items);
+      saved = [];
+      saveSavedEvents(saved);
+
+      renderBudget(); renderActivities(); closeLogin();
     });
 
     $('loginBtn')?.addEventListener('click', ()=>{
@@ -607,8 +719,6 @@
       const ok = users.find(u => (u.email||'').toLowerCase() === email.toLowerCase() && u.pw === pw);
       if(!ok){ alert('No matching account found. Click Sign up to create one (demo).'); return; }
       setAuth({ email, ts: Date.now() });
-      items = load();
-      renderBudget();
       closeLogin();
     });
 
@@ -616,42 +726,14 @@
 
     $('syncBtn')?.addEventListener('click', ()=>{
       if(!isLoggedIn()) return;
-      alert('In this MVP, your budget is saved locally to your account on this device. A full version would sync securely across devices.');
+      alert('In this MVP, your budget + saved events are stored locally to your account on this device. A full version would sync securely across devices.');
     });
-
-    // Budget data
-    function load(){
-      try {
-        const raw = budgetStore().getItem(budgetKey());
-        return raw ? (JSON.parse(raw) || []) : [];
-      } catch { return []; }
-    }
-    function save(items){
-      budgetStore().setItem(budgetKey(), JSON.stringify(items));
-      updateAuthUI();
-    }
-
-    let items = load();
-
-    function seed(){
-      const now = Date.now();
-      items = [
-        { id: uid(), ts: now-86400000*1, type:'income', category:'Other', note:'Part-time job paycheck', amount:260 },
-        { id: uid(), ts: now-86400000*1, type:'expense', category:'Food', note:'Groceries', amount:44.18, seeded:true },
-        { id: uid(), ts: now-86400000*1, type:'expense', category:'Food', note:'Dining hall / takeout', amount:18.75, seeded:true },
-        { id: uid(), ts: now-86400000*2, type:'expense', category:'Transportation', note:'Gas', amount:32.70, seeded:true },
-        { id: uid(), ts: now-86400000*2, type:'expense', category:'Subscriptions', note:'Spotify', amount:11.99, seeded:true },
-        { id: uid(), ts: now-86400000*3, type:'expense', category:'School', note:'Textbook / supplies', amount:27.50, seeded:true },
-        { id: uid(), ts: now-86400000*4, type:'expense', category:'Entertainment', note:'Movie ticket', amount:13.50, seeded:true }
-      ];
-      save(items);
-      renderBudget();
-    }
 
     function renderBudget(){
       const tbody = $('rows');
       if(!tbody) return;
       tbody.innerHTML='';
+
       const sorted = [...items].sort((a,b)=> (b.ts||0)-(a.ts||0));
 
       for(const it of sorted){
@@ -660,6 +742,7 @@
         const dateStr = isFinite(d.getTime()) ? d.toLocaleDateString() : '—';
         const typeLabel = it.type === 'income' ? 'Income' : 'Expense';
         const typeClass = it.type === 'income' ? 'success' : 'danger';
+
         tr.innerHTML = `
           <td class="tdMuted">${dateStr}</td>
           <td class="${typeClass}">${typeLabel}</td>
@@ -675,8 +758,10 @@
         btn.addEventListener('click', ()=>{
           const id = btn.getAttribute('data-del');
           items = items.filter(x=>x.id!==id);
-          save(items);
+          saveBudget(items);
           renderBudget();
+          renderActivities();
+          updateAuthUI();
         });
       });
 
@@ -688,6 +773,13 @@
       $('expenses').textContent = money(expenses);
       $('net').textContent = money(net);
       $('net').className = 'v money ' + (net >= 0 ? 'success' : 'danger');
+
+      const netTag = $('netForEvents');
+      if(netTag){
+        netTag.textContent = `Net: ${money(net)}`;
+        netTag.style.background = net >= 0 ? 'rgba(34,197,94,.14)' : 'rgba(239,68,68,.14)';
+        netTag.style.borderColor = net >= 0 ? 'rgba(34,197,94,.22)' : 'rgba(239,68,68,.22)';
+      }
 
       const cats = {};
       for(const it of items){
@@ -722,15 +814,30 @@
     }
 
     function addTransaction(){
+      const a = getAuth();
+      if(!a?.email){
+        const remaining = PREVIEW_CUSTOM_LIMIT - countCustomAdds();
+        if(remaining <= 0){
+          alert('Preview limit reached (3 custom transactions). Log in to add unlimited transactions and save your budget.');
+          openLogin();
+          return;
+        }
+      }
+
       const type = $('type').value;
       const category = $('category').value;
       const amountRaw = $('amount').value.trim();
       const note = $('note').value.trim();
       const amount = Number(amountRaw);
+
       if(!isFinite(amount) || amount<=0){ alert('Enter a valid amount (ex: 12.50).'); return; }
-      items.push({ id: uid(), ts: Date.now(), type, category, note, amount });
-      save(items);
+
+      items.push({ id: uid(), ts: Date.now(), type, category, note, amount, seeded:false });
+      saveBudget(items);
       renderBudget();
+      renderActivities();
+      updateAuthUI();
+
       $('amount').value='';
       $('note').value='';
     }
@@ -738,13 +845,18 @@
     function resetAll(){
       if(!confirm('Reset the current budget view? This clears data for Preview or your account.')) return;
       items=[];
-      save(items);
+      saveBudget(items);
       renderBudget();
+      renderActivities();
       if(!isLoggedIn()) seed();
+      updateAuthUI();
     }
 
     $('addBtn')?.addEventListener('click', addTransaction);
-    $('seedBtn')?.addEventListener('click', ()=>{ if(isLoggedIn()) { alert('Student example is for Preview. Log out to view it.'); return; } seed(); });
+    $('seedBtn')?.addEventListener('click', ()=>{
+      if(isLoggedIn()) { alert('Student example is for Preview. Log out to view it.'); return; }
+      seed();
+    });
     $('resetBtn')?.addEventListener('click', resetAll);
     $('amount')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTransaction(); });
     $('note')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTransaction(); });
@@ -778,7 +890,7 @@
       stmtPreview.innerHTML = `<img alt="Statement preview" src="${url}" style="max-width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.12);" />`;
     });
 
-$('extractBtn')?.addEventListener('click', ()=>{
+    $('extractBtn')?.addEventListener('click', ()=>{
       if(!isLoggedIn()){
         alert('Log in to enable statement image uploads and prefill.');
         openLogin();
@@ -791,42 +903,137 @@ $('extractBtn')?.addEventListener('click', ()=>{
       alert('Demo prefill complete. Review the fields and click Add.');
     });
 
-// Events
     const ACTIVITIES = [
-      { audience:'campus', title:'Student Organization Social Night', date:'Next week • Evening', location:'Student Union / Main Campus', cost:'Free', link:'#' },
-      { audience:'triangle', title:'Local Concert / Live Music', date:'This month • Night', location:'Downtown venue (Raleigh)', cost:'Ticketed', link:'#' },
-      { audience:'triangle', title:'Sports Game (Basketball/Hockey)', date:'This month • Evening', location:'Arena (Raleigh)', cost:'Ticketed', link:'#' }
+      { id:'ev1', audience:'campus', title:'Student Organization Social Night', date:'Next week • Evening', location:'Student Union / Main Campus', costType:'Free', link:'#' },
+      { id:'ev2', audience:'triangle', title:'Local Concert / Live Music', date:'This month • Night', location:'Downtown venue (Raleigh)', costType:'Ticketed', link:'#' },
+      { id:'ev3', audience:'triangle', title:'Sports Game (Basketball/Hockey)', date:'This month • Evening', location:'Arena (Raleigh)', costType:'Ticketed', link:'#' }
     ];
+
+    function getNet(){
+      const income = items.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);
+      const expenses = items.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
+      return income - expenses;
+    }
+
+    function eventEstimatedCost(a){
+      const isFree = (a.costType || '').toLowerCase() === 'free';
+      if(isFree) return 0;
+      const est = Number($('ticketMax')?.value || 35);
+      return isFinite(est) ? est : 35;
+    }
+
+    function renderSavedEvents(){
+      const wrap = $('savedEvents');
+      if(!wrap) return;
+      wrap.innerHTML='';
+
+      if(!isLoggedIn()){
+        const p = document.createElement('div');
+        p.className = 'small';
+        p.textContent = 'Log in to save events.';
+        wrap.appendChild(p);
+        return;
+      }
+
+      if(!saved.length){
+        const p = document.createElement('div');
+        p.className = 'small';
+        p.textContent = 'No saved events yet — click “Save” on an event card.';
+        wrap.appendChild(p);
+        return;
+      }
+
+      for(const ev of saved.slice().reverse()){
+        const row = document.createElement('div');
+        row.style.border = '1px solid rgba(255,255,255,.12)';
+        row.style.borderRadius = '14px';
+        row.style.padding = '12px';
+        row.style.background = 'rgba(255,255,255,.04)';
+
+        row.innerHTML = `
+          <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:760;">${escapeHtml(ev.title)}</div>
+              <div class="small">${escapeHtml(ev.date)} • ${escapeHtml(ev.location)}</div>
+            </div>
+            <button class="btn" data-unsave="${escapeHtml(ev.id)}" type="button" style="padding:7px 10px; border-radius:10px;">Remove</button>
+          </div>
+        `;
+        wrap.appendChild(row);
+      }
+
+      wrap.querySelectorAll('[data-unsave]').forEach((btn)=>{
+        btn.addEventListener('click', ()=>{
+          const id = btn.getAttribute('data-unsave');
+          saved = saved.filter(x => x.id !== id);
+          saveSavedEvents(saved);
+          renderSavedEvents();
+        });
+      });
+    }
 
     function renderActivities(){
       const wrap = $('activityCards');
       if(!wrap) return;
+
       const filter = ($('activityFilter')?.value || 'all');
-      const list = ACTIVITIES.filter(a => filter==='all' ? true : a.audience===filter);
+      const onlyAffordable = ($('onlyAffordable')?.value || 'off') === 'on';
+      const net = getNet();
+
+      const listBase = ACTIVITIES.filter(a => filter==='all' ? true : a.audience===filter);
+      const list = listBase.filter(a => {
+        if(!onlyAffordable) return true;
+        return eventEstimatedCost(a) <= net;
+      });
+
       wrap.innerHTML='';
+
+      if(!list.length){
+        const empty = document.createElement('div');
+        empty.className = 'card';
+        empty.style.gridColumn = '1 / -1';
+        empty.innerHTML = `
+          <div class="tag" style="background:rgba(239,68,68,.14); border-color:rgba(239,68,68,.22)">No matches</div>
+          <h3>Nothing fits your filters</h3>
+          <p style="margin:0; color:var(--muted);">Try turning off “Only show affordable,” or increase your net by adding income.</p>
+        `;
+        wrap.appendChild(empty);
+        updateAuthUI();
+        return;
+      }
+
       for(const a of list.slice(0, 18)){
         const card = document.createElement('div');
         card.className = 'card';
 
-        const isFree = (a.cost || '').toLowerCase() === 'free';
+        const isFree = (a.costType || '').toLowerCase() === 'free';
+        const est = eventEstimatedCost(a);
         const tagBg = isFree
           ? 'background:rgba(34,197,94,.14); border-color:rgba(34,197,94,.22);'
           : 'background:rgba(245,158,11,.14); border-color:rgba(245,158,11,.22);';
         const scope = a.audience === 'campus' ? 'NCSU' : 'Triangle';
 
+        const affordability = (est <= net) ? 'success' : 'warn';
+        const affordText = isFree ? 'Fits budget' : (est <= net ? 'Fits budget' : 'May exceed budget');
+
         card.innerHTML = `
-          <div class="tag" style="${tagBg}">🎟️ ${escapeHtml(a.cost || 'Ticketed')} • ${scope}</div>
+          <div class="tag" style="${tagBg}">
+            🎟️ ${escapeHtml(a.costType || 'Ticketed')} • ${scope}${isFree ? '' : ` • est ${money(est)}`}
+          </div>
           <h3>${escapeHtml(a.title)}</h3>
           <p style="margin:0; color:var(--muted);">${escapeHtml(a.date)}<br/>${escapeHtml(a.location)}</p>
+
+          <div style="height:10px"></div>
+          <div class="${affordability}" style="font-weight:760; font-size:13px;">${affordText}</div>
+
           <div style="height:12px"></div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <a class="btn" href="${a.link}" target="_blank" rel="noreferrer" style="width:fit-content">View details</a>
-          <button class="btn" data-save="${escapeHtml(a.title)}" type="button">Save</button>
-        </div>
+            <a class="btn" href="${a.link}" target="_blank" rel="noreferrer" style="width:fit-content">View details</a>
+            <button class="btn" data-save="${escapeHtml(a.id)}" type="button">Save</button>
+          </div>
         `;
         wrap.appendChild(card);
       }
-    }
 
       wrap.querySelectorAll('[data-save]').forEach((btn)=>{
         btn.addEventListener('click', ()=>{
@@ -835,22 +1042,36 @@ $('extractBtn')?.addEventListener('click', ()=>{
             openLogin();
             return;
           }
-          alert('Saved! (Demo) In a full app, this would appear in your profile.');
+          const id = btn.getAttribute('data-save');
+          const ev = ACTIVITIES.find(x => x.id === id);
+          if(!ev) return;
+
+          if(saved.some(x => x.id === ev.id)){
+            alert('Already saved.');
+            return;
+          }
+          saved.push({ id: ev.id, title: ev.title, date: ev.date, location: ev.location, ts: Date.now() });
+          saveSavedEvents(saved);
+          renderSavedEvents();
+          alert('Saved! (Demo) This appears in your Saved Events list.');
         });
       });
 
+      updateAuthUI();
+    }
+
     $('activityFilter')?.addEventListener('change', renderActivities);
+    $('ticketMax')?.addEventListener('input', ()=>{
+      $('ticketMaxLabel').textContent = money(Number($('ticketMax').value || 35));
+      renderActivities();
+    });
+    $('onlyAffordable')?.addEventListener('change', renderActivities);
 
-    // Init
     document.getElementById('yr').textContent = new Date().getFullYear();
-    updateAuthUI();
-
     if(items.length === 0 && !isLoggedIn()) seed();
     else renderBudget();
-
+    $('ticketMaxLabel').textContent = money(Number($('ticketMax')?.value || 35));
     renderActivities();
-
-    // Apply auth gating to any newly rendered buttons
     updateAuthUI();
   </script>
 </body>
