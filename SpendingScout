@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SpendingScout — Budgeting + Events (NCSU)</title>
+  <meta name="description" content="Track your spending and browse NCSU + Raleigh events." />
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.52);
+      --brand:#7c3aed;
+      --brand2:#22c55e;
+      --radius:18px;
+      --shadow:0 18px 60px rgba(0,0,0,.45);
+      --max:1120px;
+      --font:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% 0%, rgba(124,58,237,.35), transparent 60%),
+        radial-gradient(1000px 520px at 90% 20%, rgba(34,197,94,.22), transparent 65%),
+        radial-gradient(900px 500px at 30% 100%, rgba(59,130,246,.18), transparent 60%),
+        var(--bg);
+      line-height:1.45;
+    }
+    a{color:inherit; text-decoration:none}
+    .container{max-width:var(--max); margin:0 auto; padding:0 20px}
+
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter:saturate(140%) blur(12px);
+      background:linear-gradient(to bottom, rgba(11,18,32,.86), rgba(11,18,32,.55));
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; padding:14px 0; gap:14px}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:760; letter-spacing:.2px}
+    .logo{
+      width:34px; height:34px; border-radius:12px;
+      background:conic-gradient(from 210deg, var(--brand), #3b82f6, var(--brand2), var(--brand));
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow:0 12px 30px rgba(124,58,237,.25);
+    }
+    .navlinks{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .navlinks a{
+      color:var(--muted);
+      font-size:14px;
+      padding:8px 10px;
+      border-radius:10px;
+    }
+    .navlinks a:hover{background:rgba(255,255,255,.06); color:var(--text)}
+
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      cursor:pointer;
+      transition:transform .08s ease, background .18s ease, border-color .18s ease;
+      user-select:none;
+      font-weight:650;
+    }
+    .btn:hover{background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.18)}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{
+      border-color:rgba(124,58,237,.35);
+      background:linear-gradient(135deg, rgba(124,58,237,.92), rgba(59,130,246,.78));
+      box-shadow:0 16px 40px rgba(124,58,237,.22);
+    }
+
+    main{padding:18px 0 70px}
+    .heroCard{
+      padding:22px;
+      border-radius:var(--radius);
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .kicker{
+      display:inline-flex; gap:10px; align-items:center;
+      padding:7px 12px;
+      border-radius:999px;
+      background:rgba(124,58,237,.18);
+      border:1px solid rgba(124,58,237,.28);
+      color:rgba(255,255,255,.9);
+      font-weight:650;
+      font-size:13px;
+    }
+    .dot{width:8px; height:8px; border-radius:50%; background:var(--brand2)}
+
+    h1{margin:12px 0 8px; font-size:38px; line-height:1.05; letter-spacing:-.6px}
+    h2{margin:0; font-size:22px; letter-spacing:-.2px}
+    .sub{color:var(--muted); font-size:16px; max-width:74ch}
+
+    .section{margin-top:18px; scroll-margin-top:92px;}
+    .sectionHead{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin:0 0 14px}
+    .sectionHead p{margin:0; color:var(--muted); font-size:14px}
+
+    .grid3{display:grid; grid-template-columns:repeat(3, 1fr); gap:14px}
+    .grid2{display:grid; grid-template-columns:repeat(2, 1fr); gap:14px}
+
+    .card{
+      border-radius:var(--radius);
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 10px 28px rgba(0,0,0,.28);
+      padding:18px;
+      overflow:hidden;
+    }
+    .card h3{margin:0 0 6px; font-size:16px}
+    .card p{margin:0; color:var(--muted); font-size:14px}
+
+    .tag{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:rgba(255,255,255,.84);
+      background:rgba(34,197,94,.14);
+      border:1px solid rgba(34,197,94,.22);
+      margin-bottom:10px;
+      white-space:nowrap;
+    }
+
+    /* Budget UI */
+    .appWrap{display:grid; grid-template-columns:1fr; gap:14px}
+    .appHeader{display:flex; gap:12px; flex-wrap:wrap; justify-content:space-between; align-items:flex-start}
+    .inputs{display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:10px}
+    .field{display:flex; flex-direction:column; gap:6px}
+    label{font-size:12px; color:var(--muted2)}
+    input, select{
+      border-radius:12px;
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(10,16,28,.55);
+      color:var(--text);
+      outline:none;
+    }
+    input:focus, select:focus{border-color:rgba(124,58,237,.5); box-shadow:0 0 0 3px rgba(124,58,237,.18)}
+
+    .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      color:rgba(255,255,255,.86);
+      font-size:13px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip:hover{background:rgba(255,255,255,.08)}
+
+    .appMain{display:grid; grid-template-columns:1.05fr .95fr; gap:14px; align-items:stretch}
+
+    .tableWrap{overflow:auto; border-radius:var(--radius); border:1px solid rgba(255,255,255,.12)}
+    table{width:100%; border-collapse:collapse; font-size:14px}
+    th, td{padding:12px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,.08)}
+    th{color:rgba(255,255,255,.82); font-size:12px; text-transform:uppercase; letter-spacing:.08em; background:rgba(255,255,255,.04)}
+    td{color:rgba(255,255,255,.88)}
+    .tdMuted{color:var(--muted)}
+    .money{font-variant-numeric:tabular-nums}
+
+    .miniGrid{display:grid; grid-template-columns:repeat(2, 1fr); gap:10px}
+    .stat{padding:14px; border-radius:var(--radius); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12)}
+    .stat .k{color:var(--muted2); font-size:12px}
+    .stat .v{font-size:22px; font-weight:780; margin-top:4px; letter-spacing:-.2px}
+
+    .barList{display:flex; flex-direction:column; gap:10px; margin-top:10px}
+    .barRow{display:flex; align-items:center; justify-content:space-between; gap:10px}
+    .barRow .name{color:rgba(255,255,255,.84); font-size:13px}
+    .barRow .pct{color:var(--muted); font-size:12px}
+    .bar{height:10px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.10); overflow:hidden; margin-top:6px}
+    .bar > i{display:block; height:100%; width:40%; border-radius:999px; background:linear-gradient(90deg, rgba(34,197,94,.9), rgba(124,58,237,.9))}
+
+    .danger{color:rgba(239,68,68,.95)}
+    .success{color:rgba(34,197,94,.95)}
+
+    footer{margin-top:24px; color:var(--muted2); font-size:13px}
+    .footRow{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; padding-top:16px; border-top:1px solid rgba(255,255,255,.08)}
+
+    /* Login modal */
+    #loginModal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.55); backdrop-filter:blur(8px); z-index:60}
+
+    @media (max-width: 980px){
+      h1{font-size:34px}
+      .appMain{grid-template-columns:1fr}
+      .inputs{grid-template-columns:repeat(2, 1fr)}
+      .grid2{grid-template-columns:1fr}
+    }
+    @media (max-width: 560px){
+      .inputs{grid-template-columns:1fr}
+      .navlinks{display:none}
+    }
+  
+    button:disabled{opacity:.55; cursor:not-allowed}
+    input:disabled, select:disabled{opacity:.55; cursor:not-allowed}
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <div class="nav">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>SpendingScout</div>
+        </div>
+
+        <nav class="navlinks" aria-label="Navigation">
+          <a href="#home">Home</a>
+          <a href="#budget">Budgeting</a>
+          <a href="#events">Events</a>
+          <a href="#how">How it works</a>
+          <a href="#about">About</a>
+        </nav>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+          <span class="tag" id="authPill" style="margin:0; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">Preview</span>
+          <button class="btn" id="openSignupTop" type="button">Sign up</button>
+          <button class="btn primary" id="openLoginTop" type="button">Log in</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+
+      <section class="heroCard section" id="home" style="margin-top:16px;">
+        <div class="kicker"><span class="dot" aria-hidden="true"></span> Built for NC State students</div>
+        <h1>Know your budget.<br/>Find things to do that fit it.</h1>
+        <p class="sub">Scroll to try the live demos below. Create an account to save your own budget on this device.</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+          <span class="tag">Live demos below ↓</span>
+        </div>
+      </section>
+
+      <section class="section" id="overview">
+        <div class="grid2">
+          <div class="card">
+            <div class="tag">Budget demo</div>
+            <h3>Interactive budgeting</h3>
+            <p>Add income and expenses, then see totals and category breakdown instantly.</p>
+            <div style="height:12px"></div>
+            <a class="btn" href="#budget" style="width:fit-content;">Scroll to budgeting ↓</a>
+          </div>
+          <div class="card">
+            <div class="tag" style="background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22)">Events demo</div>
+            <h3>Interactive events</h3>
+            <p>Filter example campus and Raleigh events to find options that fit your budget.</p>
+            <div style="height:12px"></div>
+            <a class="btn" href="#events" style="width:fit-content;">Scroll to events ↓</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="budget">
+        <div class="sectionHead">
+          <div>
+            <h2>Budgeting demo</h2>
+            <p>Preview starts with common student expenses. Log in to keep your own budget.</p>
+            <p style="margin:6px 0 0; color:var(--muted2); font-size:12px;">Preview is interactive, but limited (add up to <b>3</b> custom transactions). Create an account for unlimited entries and persistent saving.</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn" id="seedBtn" type="button">Load student example</button>
+            <button class="btn" id="resetBtn" type="button">Reset</button>
+            <button class="btn primary" id="syncBtn" type="button" title="Requires login">Sync</button>
+          </div>
+        </div>
+
+        <div class="card appWrap">
+          <div class="appHeader">
+            <div class="left">
+              <h3 style="margin:0 0 6px; font-size:18px;">Budget Tracker</h3>
+              <p style="margin:0; color:var(--muted); font-size:14px;">Use the form below to add <b>Income</b> or <b>Expenses</b>.</p>
+            </div>
+            <div class="right" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <div class="tag" id="saveStatus" style="margin:0; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">Preview data</div>
+              <button class="btn primary" id="addBtn" type="button">Add</button>
+            </div>
+          </div>
+
+          <div class="inputs" aria-label="Transaction inputs">
+            <div class="field">
+              <label for="type">Type</label>
+              <select id="type">
+                <option value="expense" selected>Expense</option>
+                <option value="income">Income</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="category">Category</label>
+              <select id="category">
+                <option>Food</option>
+                <option>Transportation</option>
+                <option>Subscriptions</option>
+                <option>School</option>
+                <option>Essentials</option>
+                <option>Entertainment</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="amount">Amount</label>
+              <input id="amount" inputmode="decimal" placeholder="Amount (ex: 12.50)" />
+            </div>
+            <div class="field">
+              <label for="note">Description</label>
+              <input id="note" placeholder="Description (ex: Target groceries)" />
+            </div>
+          </div>
+
+          <div class="chips" aria-label="Quick add examples">
+            <div class="chip" data-chip='{"type":"expense","category":"Food","amount":"12.50","note":"Coffee / snack"}'>☕ Coffee $12.50</div>
+            <div class="chip" data-chip='{"type":"expense","category":"Food","amount":"18.75","note":"Dining hall / takeout"}'>🍔 Food $18.75</div>
+            <div class="chip" data-chip='{"type":"expense","category":"Transportation","amount":"32.70","note":"Gas"}'>⛽ Gas $32.70</div>
+            <div class="chip" data-chip='{"type":"expense","category":"Subscriptions","amount":"11.99","note":"Spotify"}'>🎵 Spotify $11.99</div>
+            <div class="chip" data-chip='{"type":"expense","category":"School","amount":"27.50","note":"Supplies"}'>📚 Supplies $27.50</div>
+            <div class="chip" data-chip='{"type":"income","category":"Other","amount":"260.00","note":"Paycheck"}'>💰 Income $260</div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="card" style="background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.10);">
+            <div class="sectionHead" style="margin:0;">
+              <div>
+                <h3 style="margin:0; font-size:16px;">Statement scan (demo)</h3>
+                <p style="margin:4px 0 0; color:var(--muted); font-size:13px;">Upload a screenshot/photo of a statement line item. Preview shows the workflow; sign in to enable uploads and prefill.</p>
+              </div>
+              <button class="btn" id="extractBtn" type="button">Prefill from image</button>
+            </div>
+            <div style="height:10px"></div>
+            <div class="grid2">
+              <div>
+                <div style="border:1px dashed rgba(255,255,255,.22); border-radius:var(--radius); padding:14px; background:rgba(10,16,28,.35);">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <div>
+                      <div style="font-weight:700;">Upload statement image <span class="tag" style="margin:0 0 0 8px; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">Requires login</span></div>
+                      <div style="color:var(--muted2); font-size:12px;">PNG/JPG • stored locally</div>
+                    </div>
+                    <input id="stmtFile" type="file" accept="image/*" />
+                  </div>
+                  <div id="stmtPreview" style="margin-top:12px; display:none;"></div>
+                </div>
+              </div>
+              <div>
+                <div class="tag" style="background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22);">Example “scan”</div>
+                <div style="border-radius:var(--radius); overflow:hidden; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04);">
+                  <div style="padding:12px; border-bottom:1px solid rgba(255,255,255,.08); font-size:12px; color:rgba(255,255,255,.82); text-transform:uppercase; letter-spacing:.08em;">Statement line item</div>
+                  <div style="padding:14px; color:rgba(255,255,255,.84); font-size:13px;">
+                    <div style="display:flex; justify-content:space-between; gap:10px;"><span>02/07 • TARGET T-1234</span><span class="money">-$44.18</span></div>
+                    <div style="color:var(--muted2); margin-top:6px;">Click “Prefill from image” → fills Amount/Category/Description</div>
+                  </div>
+                </div>
+                <div style="height:10px"></div>
+                <p style="margin:0; color:var(--muted2); font-size:12px;">Future version: secure OCR + category rules (with permission) to auto-import spending.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="appMain">
+            <div class="card" style="padding:0;">
+              <div class="tableWrap" role="region" aria-label="Transactions table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Category</th>
+                      <th>Description</th>
+                      <th class="money">Amount</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="rows"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="margin:0 0 6px; font-size:16px;">Summary</h3>
+              <p style="margin:0; color:var(--muted); font-size:14px;">Income, expenses, net, and top category.</p>
+
+              <div style="height:10px"></div>
+              <div class="miniGrid">
+                <div class="stat"><div class="k">Income</div><div class="v money" id="income">$0.00</div></div>
+                <div class="stat"><div class="k">Expenses</div><div class="v money" id="expenses">$0.00</div></div>
+                <div class="stat"><div class="k">Net</div><div class="v money" id="net">$0.00</div></div>
+                <div class="stat"><div class="k">Top category</div><div class="v" id="topCat">—</div></div>
+              </div>
+
+              <div style="height:10px"></div>
+              <div class="card" style="background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.10);">
+                <h3 style="margin:0 0 6px; font-size:14px;">Category breakdown</h3>
+                <div id="bars" class="barList"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="events">
+        <div class="sectionHead">
+          <div>
+            <h2>Events demo</h2>
+            <p>Three example events you can swap for real listings later.</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <div class="tag" style="margin:0; background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22)">Raleigh + NCSU</div>
+            <select id="activityFilter" aria-label="Activity filter" style="min-width:190px;">
+              <option value="all" selected>Campus + Triangle</option>
+              <option value="campus">Campus only</option>
+              <option value="triangle">Triangle only</option>
+            </select>
+          </div>
+        </div>
+        <div class="card">
+          <div class="grid3" id="activityCards"></div>
+        </div>
+      </section>
+
+      <section class="section" id="how">
+        <div class="sectionHead"><div><h2>How it works</h2><p>Simple, fast, and privacy-first.</p></div></div>
+        <div class="grid3">
+          <div class="card"><div class="tag">1</div><h3>Add spending</h3><p>Track income and expenses in seconds.</p></div>
+          <div class="card"><div class="tag">2</div><h3>See patterns</h3><p>Instant category breakdown and totals.</p></div>
+          <div class="card"><div class="tag">3</div><h3>Pick events</h3><p>Choose plans that fit your budget.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="about">
+        <div class="sectionHead"><div><h2>About</h2><p>Made for NC State — designed to expand.</p></div></div>
+        <div class="grid2">
+          <div class="card"><h3>Campus-first</h3><p>Categories and example events match student life at NC State.</p></div>
+          <div class="card"><h3>Expandable</h3><p>Next steps: real event feeds, OCR imports, and secure cloud sync.</p></div>
+        </div>
+      </section>
+
+      <footer>
+        <div class="footRow">
+          <div>© <span id="yr"></span> SpendingScout</div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+            <a class="btn" href="#home" style="padding:7px 10px; border-radius:10px;">Back to top</a>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  </main>
+
+  <div id="loginModal" role="dialog" aria-modal="true" aria-label="Sign up or log in">
+    <div class="card" style="max-width:520px; width:100%;">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+        <div>
+          <h3 style="margin:0 0 6px;">Sign up or log in</h3>
+          <p style="margin:0; color:var(--muted); font-size:14px;">This demo stores accounts locally in your browser for testing.</p>
+        </div>
+        <button class="btn" id="closeLogin" type="button" style="padding:7px 10px; border-radius:10px;">Close</button>
+      </div>
+
+      <div style="height:12px"></div>
+      <div class="grid2">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" placeholder="you@ncsu.edu" />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="••••••••" />
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+        <button class="btn" id="logoutBtn" type="button">Log out</button>
+        <button class="btn" id="signupBtn" type="button">Sign up</button>
+        <button class="btn primary" id="loginBtn" type="button">Log in</button>
+      </div>
+
+      <div style="height:10px"></div>
+      <p style="margin:0; color:var(--muted2); font-size:12px;">For a real product, use secure authentication + hashed passwords. This is for E101 MVP testing only.</p>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const money = (n) => Number(n || 0).toLocaleString(undefined, { style: "currency", currency: "USD" });
+    const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+    const escapeHtml = (str) => String(str || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+
+    // Auth (local demo)
+    const AUTH_KEY = 'spendingscout_auth_v1';
+    const USERS_KEY = 'spendingscout_users_v1';
+
+    function getAuth(){ try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch { return null; } }
+    function isLoggedIn(){ return !!getAuth(); }
+
+    function budgetKey(){
+      const a = getAuth();
+      if(a?.email) return 'spendingscout_budget_user_' + a.email.toLowerCase();
+      return 'spendingscout_budget_preview_v1';
+    }
+    function budgetStore(){
+      // Preview: keep it interactive but not fully persistent
+      return isLoggedIn() ? localStorage : sessionStorage;
+    }
+
+    function updateAuthUI(){
+      const pill = $('authPill');
+      const a = getAuth();
+      if(pill) pill.textContent = a?.email ? ('Logged in: ' + a.email) : 'Preview';
+
+      const su = $('openSignupTop');
+      const li = $('openLoginTop');
+
+      if(a?.email){
+        if(su) su.style.display='none';
+        if(li){ li.textContent='Log out'; li.classList.remove('primary'); }
+      const stmtFile = $('stmtFile');
+      const extractBtn = $('extractBtn');
+      if(stmtFile){ stmtFile.disabled = !a?.email; }
+      if(extractBtn){ extractBtn.disabled = !a?.email; }
+      // Event save buttons (rendered in Events section)
+      document.querySelectorAll('[data-save]').forEach((b)=>{
+        b.disabled = !a?.email;
+        b.title = a?.email ? 'Save event' : 'Requires login';
+      });
+
+
+      } else {
+        if(su) su.style.display='inline-flex';
+        if(li){ li.textContent='Log in'; li.classList.add('primary'); }
+      }
+
+      const saveStatus = $('saveStatus');
+      if(saveStatus){
+        saveStatus.textContent = a?.email ? 'Your budget' : 'Preview (session)';
+        saveStatus.style.background = a?.email ? 'rgba(34,197,94,.14)' : 'rgba(255,255,255,.08)';
+        saveStatus.style.borderColor = a?.email ? 'rgba(34,197,94,.22)' : 'rgba(255,255,255,.12)';
+      }
+
+      const syncBtn = $('syncBtn');
+      if(syncBtn){
+        syncBtn.disabled = !a?.email;
+        syncBtn.style.opacity = a?.email ? '1' : '.55';
+        syncBtn.style.cursor = a?.email ? 'pointer' : 'not-allowed';
+      }
+    }
+
+    function setAuth(obj){
+      if(obj) localStorage.setItem(AUTH_KEY, JSON.stringify(obj));
+      else localStorage.removeItem(AUTH_KEY);
+      items = load();
+      if(items.length === 0 && !isLoggedIn()) seed();
+      renderBudget();
+      updateAuthUI();
+    }
+
+    function openLogin(){ const m = $('loginModal'); if(m) m.style.display='flex'; }
+    function closeLogin(){ const m = $('loginModal'); if(m) m.style.display='none'; }
+
+    $('openSignupTop')?.addEventListener('click', ()=>{ openLogin(); $('email')?.focus(); });
+    $('openLoginTop')?.addEventListener('click', ()=>{
+      if(isLoggedIn()){ setAuth(null); return; }
+      openLogin(); $('email')?.focus();
+    });
+    $('closeLogin')?.addEventListener('click', closeLogin);
+    $('loginModal')?.addEventListener('click', (e)=>{ if(e.target?.id==='loginModal') closeLogin(); });
+
+    $('signupBtn')?.addEventListener('click', ()=>{
+      const email = $('email')?.value?.trim();
+      const pw = $('password')?.value || '';
+      if(!email || pw.length < 4){ alert('Enter an email and a password (4+ chars) to sign up in this demo.'); return; }
+      let users = [];
+      try { users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]') || []; } catch { users = []; }
+      if(users.some(u => (u.email||'').toLowerCase() === email.toLowerCase())){ alert('Account already exists. Use Log in.'); return; }
+      users.push({ email, pw });
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      setAuth({ email, ts: Date.now() });
+      items = [];
+      save(items);
+      renderBudget();
+      closeLogin();
+    });
+
+    $('loginBtn')?.addEventListener('click', ()=>{
+      const email = $('email')?.value?.trim();
+      const pw = $('password')?.value || '';
+      if(!email || pw.length < 4){ alert('Enter your email and password.'); return; }
+      let users = [];
+      try { users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]') || []; } catch { users = []; }
+      const ok = users.find(u => (u.email||'').toLowerCase() === email.toLowerCase() && u.pw === pw);
+      if(!ok){ alert('No matching account found. Click Sign up to create one (demo).'); return; }
+      setAuth({ email, ts: Date.now() });
+      items = load();
+      renderBudget();
+      closeLogin();
+    });
+
+    $('logoutBtn')?.addEventListener('click', ()=>{ setAuth(null); closeLogin(); });
+
+    $('syncBtn')?.addEventListener('click', ()=>{
+      if(!isLoggedIn()) return;
+      alert('In this MVP, your budget is saved locally to your account on this device. A full version would sync securely across devices.');
+    });
+
+    // Budget data
+    function load(){
+      try {
+        const raw = budgetStore().getItem(budgetKey());
+        return raw ? (JSON.parse(raw) || []) : [];
+      } catch { return []; }
+    }
+    function save(items){
+      budgetStore().setItem(budgetKey(), JSON.stringify(items));
+      updateAuthUI();
+    }
+
+    let items = load();
+
+    function seed(){
+      const now = Date.now();
+      items = [
+        { id: uid(), ts: now-86400000*1, type:'income', category:'Other', note:'Part-time job paycheck', amount:260 },
+        { id: uid(), ts: now-86400000*1, type:'expense', category:'Food', note:'Groceries', amount:44.18, seeded:true },
+        { id: uid(), ts: now-86400000*1, type:'expense', category:'Food', note:'Dining hall / takeout', amount:18.75, seeded:true },
+        { id: uid(), ts: now-86400000*2, type:'expense', category:'Transportation', note:'Gas', amount:32.70, seeded:true },
+        { id: uid(), ts: now-86400000*2, type:'expense', category:'Subscriptions', note:'Spotify', amount:11.99, seeded:true },
+        { id: uid(), ts: now-86400000*3, type:'expense', category:'School', note:'Textbook / supplies', amount:27.50, seeded:true },
+        { id: uid(), ts: now-86400000*4, type:'expense', category:'Entertainment', note:'Movie ticket', amount:13.50, seeded:true }
+      ];
+      save(items);
+      renderBudget();
+    }
+
+    function renderBudget(){
+      const tbody = $('rows');
+      if(!tbody) return;
+      tbody.innerHTML='';
+      const sorted = [...items].sort((a,b)=> (b.ts||0)-(a.ts||0));
+
+      for(const it of sorted){
+        const tr = document.createElement('tr');
+        const d = new Date(it.ts);
+        const dateStr = isFinite(d.getTime()) ? d.toLocaleDateString() : '—';
+        const typeLabel = it.type === 'income' ? 'Income' : 'Expense';
+        const typeClass = it.type === 'income' ? 'success' : 'danger';
+        tr.innerHTML = `
+          <td class="tdMuted">${dateStr}</td>
+          <td class="${typeClass}">${typeLabel}</td>
+          <td>${escapeHtml(it.category || 'Other')}</td>
+          <td class="tdMuted">${escapeHtml(it.note || '')}</td>
+          <td class="money">${money(it.amount)}</td>
+          <td><button class="btn" data-del="${it.id}" type="button" style="padding:7px 10px; border-radius:10px;">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      tbody.querySelectorAll('[data-del]').forEach((btn)=>{
+        btn.addEventListener('click', ()=>{
+          const id = btn.getAttribute('data-del');
+          items = items.filter(x=>x.id!==id);
+          save(items);
+          renderBudget();
+        });
+      });
+
+      const income = items.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);
+      const expenses = items.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
+      const net = income - expenses;
+
+      $('income').textContent = money(income);
+      $('expenses').textContent = money(expenses);
+      $('net').textContent = money(net);
+      $('net').className = 'v money ' + (net >= 0 ? 'success' : 'danger');
+
+      const cats = {};
+      for(const it of items){
+        if(it.type!=='expense') continue;
+        const c = it.category || 'Other';
+        cats[c] = (cats[c]||0) + Number(it.amount||0);
+      }
+      const totalExp = Object.values(cats).reduce((s,v)=>s+v,0);
+      const entries = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+      $('topCat').textContent = entries.length ? entries[0][0] : '—';
+
+      const bars = $('bars');
+      bars.innerHTML='';
+      if(!entries.length){
+        const p = document.createElement('p');
+        p.style.margin='10px 0 0';
+        p.style.color='var(--muted)';
+        p.style.fontSize='13px';
+        p.textContent='Add expenses to see the breakdown.';
+        bars.appendChild(p);
+      } else {
+        for(const [name,val] of entries.slice(0,6)){
+          const pct = totalExp>0 ? Math.round((val/totalExp)*100) : 0;
+          const wrap = document.createElement('div');
+          wrap.innerHTML = `
+            <div class="barRow"><div class="name">${escapeHtml(name)}</div><div class="pct">${pct}% • ${money(val)}</div></div>
+            <div class="bar"><i style="width:${Math.max(6,pct)}%"></i></div>
+          `;
+          bars.appendChild(wrap);
+        }
+      }
+    }
+
+    function addTransaction(){
+      const type = $('type').value;
+      const category = $('category').value;
+      const amountRaw = $('amount').value.trim();
+      const note = $('note').value.trim();
+      const amount = Number(amountRaw);
+      if(!isFinite(amount) || amount<=0){ alert('Enter a valid amount (ex: 12.50).'); return; }
+      items.push({ id: uid(), ts: Date.now(), type, category, note, amount });
+      save(items);
+      renderBudget();
+      $('amount').value='';
+      $('note').value='';
+    }
+
+    function resetAll(){
+      if(!confirm('Reset the current budget view? This clears data for Preview or your account.')) return;
+      items=[];
+      save(items);
+      renderBudget();
+      if(!isLoggedIn()) seed();
+    }
+
+    $('addBtn')?.addEventListener('click', addTransaction);
+    $('seedBtn')?.addEventListener('click', ()=>{ if(isLoggedIn()) { alert('Student example is for Preview. Log out to view it.'); return; } seed(); });
+    $('resetBtn')?.addEventListener('click', resetAll);
+    $('amount')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTransaction(); });
+    $('note')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTransaction(); });
+
+    document.querySelectorAll('[data-chip]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        try{
+          const d = JSON.parse(el.getAttribute('data-chip'));
+          $('type').value = d.type || 'expense';
+          $('category').value = d.category || 'Other';
+          $('amount').value = d.amount || '';
+          $('note').value = d.note || '';
+          $('amount')?.focus();
+        } catch {}
+      });
+    });
+
+    const stmtFile = $('stmtFile');
+    const stmtPreview = $('stmtPreview');
+    stmtFile?.addEventListener('change', ()=>{
+      if(!isLoggedIn()){
+        alert('Log in to enable statement image uploads.');
+        openLogin();
+        stmtFile.value = '';
+        return;
+      }
+      const f = stmtFile.files && stmtFile.files[0];
+      if(!f){ stmtPreview.style.display='none'; stmtPreview.innerHTML=''; return; }
+      const url = URL.createObjectURL(f);
+      stmtPreview.style.display='block';
+      stmtPreview.innerHTML = `<img alt="Statement preview" src="${url}" style="max-width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.12);" />`;
+    });
+
+$('extractBtn')?.addEventListener('click', ()=>{
+      if(!isLoggedIn()){
+        alert('Log in to enable statement image uploads and prefill.');
+        openLogin();
+        return;
+      }
+      $('type').value = 'expense';
+      $('category').value = 'Food';
+      $('amount').value = '44.18';
+      $('note').value = 'Target groceries (from statement image)';
+      alert('Demo prefill complete. Review the fields and click Add.');
+    });
+
+// Events
+    const ACTIVITIES = [
+      { audience:'campus', title:'Student Organization Social Night', date:'Next week • Evening', location:'Student Union / Main Campus', cost:'Free', link:'#' },
+      { audience:'triangle', title:'Local Concert / Live Music', date:'This month • Night', location:'Downtown venue (Raleigh)', cost:'Ticketed', link:'#' },
+      { audience:'triangle', title:'Sports Game (Basketball/Hockey)', date:'This month • Evening', location:'Arena (Raleigh)', cost:'Ticketed', link:'#' }
+    ];
+
+    function renderActivities(){
+      const wrap = $('activityCards');
+      if(!wrap) return;
+      const filter = ($('activityFilter')?.value || 'all');
+      const list = ACTIVITIES.filter(a => filter==='all' ? true : a.audience===filter);
+      wrap.innerHTML='';
+      for(const a of list.slice(0, 18)){
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const isFree = (a.cost || '').toLowerCase() === 'free';
+        const tagBg = isFree
+          ? 'background:rgba(34,197,94,.14); border-color:rgba(34,197,94,.22);'
+          : 'background:rgba(245,158,11,.14); border-color:rgba(245,158,11,.22);';
+        const scope = a.audience === 'campus' ? 'NCSU' : 'Triangle';
+
+        card.innerHTML = `
+          <div class="tag" style="${tagBg}">🎟️ ${escapeHtml(a.cost || 'Ticketed')} • ${scope}</div>
+          <h3>${escapeHtml(a.title)}</h3>
+          <p style="margin:0; color:var(--muted);">${escapeHtml(a.date)}<br/>${escapeHtml(a.location)}</p>
+          <div style="height:12px"></div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a class="btn" href="${a.link}" target="_blank" rel="noreferrer" style="width:fit-content">View details</a>
+          <button class="btn" data-save="${escapeHtml(a.title)}" type="button">Save</button>
+        </div>
+        `;
+        wrap.appendChild(card);
+      }
+    }
+
+      wrap.querySelectorAll('[data-save]').forEach((btn)=>{
+        btn.addEventListener('click', ()=>{
+          if(!isLoggedIn()){
+            alert('Create an account to save events to your list.');
+            openLogin();
+            return;
+          }
+          alert('Saved! (Demo) In a full app, this would appear in your profile.');
+        });
+      });
+
+    $('activityFilter')?.addEventListener('change', renderActivities);
+
+    // Init
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    updateAuthUI();
+
+    if(items.length === 0 && !isLoggedIn()) seed();
+    else renderBudget();
+
+    renderActivities();
+
+    // Apply auth gating to any newly rendered buttons
+    updateAuthUI();
+  </script>
+</body>
+</html>
