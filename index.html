@@ -13,10 +13,11 @@
       --muted:rgba(255,255,255,.68);
       --muted2:rgba(255,255,255,.52);
 
-      /* NCSU / Wolfpack vibe (not official branding) */
+      /* NCSU-inspired theme (not official branding) */
       --brand:#cc0000;
       --brand2:#ff3b3b;
       --good:#22c55e;
+      --warn:#f59e0b;
       --blue:#3b82f6;
 
       --radius:18px;
@@ -84,6 +85,8 @@
       background:linear-gradient(135deg, rgba(204,0,0,.95), rgba(255,59,59,.78));
       box-shadow:0 16px 40px rgba(204,0,0,.20);
     }
+    .btn.ghost{background:transparent}
+    .btn.small{padding:7px 10px; border-radius:10px; font-size:13px}
 
     main{padding:18px 0 70px}
     .heroCard{
@@ -200,9 +203,63 @@
     .footRow{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; padding-top:16px; border-top:1px solid rgba(255,255,255,.08)}
 
     /* Login modal */
-    #loginModal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.55); backdrop-filter:blur(8px); z-index:60}
+    #loginModal, #confirmModal{
+      position:fixed; inset:0; display:none;
+      align-items:center; justify-content:center;
+      padding:18px; background:rgba(0,0,0,.55);
+      backdrop-filter:blur(8px);
+      z-index:60;
+    }
 
-    /* Simple "App pages" that appear after login, while keeping demo sections on Home */
+    /* Toasts */
+    #toasts{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      z-index:80;
+      width:min(380px, calc(100vw - 32px));
+      pointer-events:none;
+    }
+    .toast{
+      pointer-events:auto;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      box-shadow:0 18px 60px rgba(0,0,0,.40);
+      padding:12px 12px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .toast .icon{
+      width:34px; height:34px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      flex:0 0 auto;
+    }
+    .toast .tTitle{font-weight:820; margin:0; font-size:14px}
+    .toast .tBody{margin:2px 0 0; color:var(--muted); font-size:13px}
+    .toast .x{
+      margin-left:auto;
+      flex:0 0 auto;
+      border:none;
+      background:transparent;
+      color:rgba(255,255,255,.8);
+      cursor:pointer;
+      padding:6px 8px;
+      border-radius:10px;
+    }
+    .toast .x:hover{background:rgba(255,255,255,.06)}
+    .toast.good .icon{border-color:rgba(34,197,94,.22); background:rgba(34,197,94,.14)}
+    .toast.warn .icon{border-color:rgba(245,158,11,.22); background:rgba(245,158,11,.14)}
+    .toast.bad  .icon{border-color:rgba(239,68,68,.22); background:rgba(239,68,68,.14)}
+    .toast.info .icon{border-color:rgba(59,130,246,.22); background:rgba(59,130,246,.14)}
+
+    /* "App pages" shown after login via hash routes */
     .page{display:none}
     .page.active{display:block}
 
@@ -221,10 +278,52 @@
       padding:14px;
       display:flex; align-items:center; justify-content:space-between;
       gap:12px; flex-wrap:wrap;
+      cursor:pointer;
     }
     .dropArea.drag{border-color:rgba(204,0,0,.35); box-shadow:0 0 0 3px rgba(204,0,0,.14)}
     .dropPreview{display:none; margin-top:10px}
     .dropPreview img{max-width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.12)}
+
+    /* Pagination */
+    .pager{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+    .pager .pages{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      color:rgba(255,255,255,.86);
+      font-size:13px;
+    }
+    .pill strong{font-weight:820}
+    .pageBtn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:36px;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      cursor:pointer;
+      color:rgba(255,255,255,.88);
+      font-weight:760;
+    }
+    .pageBtn:hover{background:rgba(255,255,255,.08)}
+    .pageBtn.active{
+      border-color:rgba(204,0,0,.40);
+      background:rgba(204,0,0,.18);
+    }
 
     @media (max-width: 980px){
       h1{font-size:34px}
@@ -274,15 +373,18 @@
     </div>
   </header>
 
+  <!-- Toast container -->
+  <div id="toasts" aria-live="polite" aria-atomic="true"></div>
+
   <main>
     <div class="container">
 
-      <!-- APP PAGES (only visible in app-mode routes) -->
+      <!-- APP PAGES -->
       <section class="page" id="page-dashboard">
         <div class="heroCard section" style="margin-top:16px;">
           <div class="kicker"><span class="dot" aria-hidden="true"></span> Your Wolfpack dashboard</div>
           <h1 id="dashTitle">Welcome back.</h1>
-          <p class="sub">This is the personalized view after login: your totals + saved events snapshot.</p>
+          <p class="sub">Personalized view after login: your totals + saved events snapshot.</p>
           <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
             <a class="btn" href="#/app-budget">Go to Budget Only</a>
             <a class="btn" href="#/app-events">Go to All Events</a>
@@ -322,7 +424,7 @@
         <div class="sectionHead" style="margin-top:16px;">
           <div>
             <h2>All Events (logged in)</h2>
-            <p>This page is the “real app” events-only view. Save events to your profile.</p>
+            <p>50 example listings with sorting + pagination (swap with real feeds later).</p>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <a class="btn" href="#/dashboard">Dashboard</a>
@@ -334,14 +436,43 @@
         <div class="grid2" style="margin-bottom:14px;">
           <div class="card">
             <div class="tag" style="background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22)">Raleigh + NCSU</div>
-            <h3 style="margin:0 0 6px;">Filters</h3>
-            <p style="margin:0; color:var(--muted); font-size:14px;">Same demo data as the home page, but in an app-only layout.</p>
+            <h3 style="margin:0 0 6px;">Filters + Sort</h3>
+            <p style="margin:0; color:var(--muted); font-size:14px;">Organize by <b>Date</b> or <b>Recommended</b> (free + campus + soon).</p>
             <div style="height:10px"></div>
-            <select id="activityFilterApp" aria-label="Activity filter" style="min-width:220px;">
-              <option value="all" selected>Campus + Triangle</option>
-              <option value="campus">Campus only</option>
-              <option value="triangle">Triangle only</option>
-            </select>
+
+            <div class="grid2" style="gap:10px;">
+              <div class="field">
+                <label for="activityFilterApp">Area</label>
+                <select id="activityFilterApp" aria-label="Activity filter">
+                  <option value="all" selected>Campus + Triangle</option>
+                  <option value="campus">Campus only</option>
+                  <option value="triangle">Triangle only</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="sortApp">Sort</label>
+                <select id="sortApp" aria-label="Sort">
+                  <option value="recommended" selected>Recommended</option>
+                  <option value="date">Date (soonest)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="height:10px"></div>
+            <div class="grid2" style="gap:10px;">
+              <div class="field">
+                <label for="pageSizeApp">Per page</label>
+                <select id="pageSizeApp" aria-label="Page size">
+                  <option value="9" selected>9</option>
+                  <option value="12">12</option>
+                  <option value="18">18</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="searchApp">Search</label>
+                <input id="searchApp" placeholder="Search title, location..." />
+              </div>
+            </div>
           </div>
 
           <div class="card">
@@ -352,6 +483,11 @@
 
         <div class="card">
           <div class="grid3" id="activityCardsApp"></div>
+
+          <div class="pager">
+            <div class="pill" id="resultsMeta">Showing <strong>0</strong> results</div>
+            <div class="pages" id="pagerBtns"></div>
+          </div>
         </div>
       </section>
 
@@ -359,7 +495,7 @@
         <div class="sectionHead" style="margin-top:16px;">
           <div>
             <h2>Budget Only (logged in)</h2>
-            <p>This page is the “real app” budgeting-only view.</p>
+            <p>This is the “real app” budgeting-only view (same module as the demo below).</p>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <a class="btn" href="#/dashboard">Dashboard</a>
@@ -371,7 +507,7 @@
         <div class="card">
           <div class="tag">Tip</div>
           <h3 style="margin:0 0 6px;">You’re viewing the budgeting-only page</h3>
-          <p style="margin:0; color:var(--muted);">This uses the same budget data and UI as the demo below — just focused and easier to present.</p>
+          <p style="margin:0; color:var(--muted);">Use this page in your presentation so the demo Home stays clean.</p>
           <div style="height:12px"></div>
           <a class="btn primary" href="#budget">Open the Budget module</a>
         </div>
@@ -381,7 +517,7 @@
       <section class="heroCard section" id="home" style="margin-top:16px;">
         <div class="kicker"><span class="dot" aria-hidden="true"></span> Built for NC State students</div>
         <h1>Know your budget.<br/>Find things to do that fit it.</h1>
-        <p class="sub">Scroll to try the live demos below. Create an account to unlock your personalized dashboard + separate Budget and Events pages.</p>
+        <p class="sub">Scroll to try the live demos below. Create an account to unlock Dashboard + separate Budget and Events pages.</p>
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
           <span class="tag">Live demos below ↓</span>
           <a class="btn" href="#/dashboard" id="goDashBtn" style="display:none;">Go to Dashboard</a>
@@ -400,7 +536,7 @@
           <div class="card">
             <div class="tag" style="background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22)">Events demo</div>
             <h3>Interactive events</h3>
-            <p>Filter example campus and Raleigh events to find options that fit your budget.</p>
+            <p>Filter three example events. (The full 50-event list is on the All Events page.)</p>
             <div style="height:12px"></div>
             <a class="btn" href="#events" style="width:fit-content;">Scroll to events ↓</a>
           </div>
@@ -478,7 +614,7 @@
             <div class="sectionHead" style="margin:0;">
               <div>
                 <h3 style="margin:0; font-size:16px;">Statement scan (demo)</h3>
-                <p style="margin:4px 0 0; color:var(--muted); font-size:13px;">Drag & drop a screenshot/photo below (or click Choose file). Sign in to enable uploads + prefill.</p>
+                <p style="margin:4px 0 0; color:var(--muted); font-size:13px;">Drag & drop a screenshot/photo below (or click). Sign in to enable uploads + prefill.</p>
               </div>
               <button class="btn primary" id="extractBtn" type="button">Prefill from image</button>
             </div>
@@ -500,10 +636,10 @@
                     </div>
                   </div>
 
-                  <div class="dropArea" id="dropArea" style="margin-top:10px;">
+                  <div class="dropArea" id="dropArea" style="margin-top:10px;" role="button" tabindex="0" aria-label="Drop statement image here or click to choose a file">
                     <div>
                       <div style="font-weight:750;">Drop screenshot here</div>
-                      <div style="color:var(--muted2); font-size:12px;">or click “Choose file”</div>
+                      <div style="color:var(--muted2); font-size:12px;">or click to choose</div>
                     </div>
                     <span class="tag" id="uploadStatus" style="margin:0; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">No file selected</span>
                   </div>
@@ -568,11 +704,12 @@
         </div>
       </section>
 
+      <!-- DEMO EVENTS: MUST STAY 3 EXAMPLE EVENTS -->
       <section class="section" id="events">
         <div class="sectionHead">
           <div>
             <h2>Events demo</h2>
-            <p>Three example events you can swap for real listings later.</p>
+            <p><b>Exactly 3</b> example events (demo). The 50-event list is on <b>All Events</b> after login.</p>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
             <div class="tag" style="margin:0; background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22)">Raleigh + NCSU</div>
@@ -617,6 +754,7 @@
     </div>
   </main>
 
+  <!-- Login modal -->
   <div id="loginModal" role="dialog" aria-modal="true" aria-label="Sign up or log in">
     <div class="card" style="max-width:520px; width:100%;">
       <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
@@ -624,7 +762,7 @@
           <h3 style="margin:0 0 6px;">Sign up or log in</h3>
           <p style="margin:0; color:var(--muted); font-size:14px;">This demo stores accounts locally in your browser for testing.</p>
         </div>
-        <button class="btn" id="closeLogin" type="button" style="padding:7px 10px; border-radius:10px;">Close</button>
+        <button class="btn small" id="closeLogin" type="button">Close</button>
       </div>
 
       <div style="height:12px"></div>
@@ -651,17 +789,77 @@
     </div>
   </div>
 
+  <!-- Confirm modal (theme-safe replacement for window.confirm) -->
+  <div id="confirmModal" role="dialog" aria-modal="true" aria-label="Confirm">
+    <div class="card" style="max-width:520px; width:100%;">
+      <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+        <div>
+          <h3 style="margin:0 0 6px;" id="confirmTitle">Confirm</h3>
+          <p style="margin:0; color:var(--muted); font-size:14px;" id="confirmBody">Are you sure?</p>
+        </div>
+        <button class="btn small" id="confirmClose" type="button">Close</button>
+      </div>
+      <div style="height:14px"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+        <button class="btn" id="confirmCancel" type="button">Cancel</button>
+        <button class="btn primary" id="confirmOk" type="button">Yes</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const $ = (id) => document.getElementById(id);
     const money = (n) => Number(n || 0).toLocaleString(undefined, { style: "currency", currency: "USD" });
     const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
-    const escapeHtml = (str) => String(str || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\\"":"&quot;","'":"&#39;"}[c]));
+    const escapeHtml = (str) => String(str || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
-    // Auth (local demo)
-    const AUTH_KEY = 'spendingscout_auth_v3';
-    const USERS_KEY = 'spendingscout_users_v3';
-    const SAVED_EVENTS_KEY = 'spendingscout_saved_events_v3';
+    // ---------- Themed toasts (replaces alert/white popups) ----------
+    function toast(type, title, body, ms=3200){
+      const wrap = $('toasts');
+      if(!wrap) return;
+      const t = document.createElement('div');
+      t.className = `toast ${type || 'info'}`;
+      const icon = type === 'good' ? '✓' : type === 'warn' ? '!' : type === 'bad' ? '×' : 'i';
+      t.innerHTML = `
+        <div class="icon" aria-hidden="true">${icon}</div>
+        <div>
+          <p class="tTitle">${escapeHtml(title || '')}</p>
+          <p class="tBody">${escapeHtml(body || '')}</p>
+        </div>
+        <button class="x" aria-label="Close">✕</button>
+      `;
+      wrap.appendChild(t);
+      const close = () => { if(t && t.parentNode) t.parentNode.removeChild(t); };
+      t.querySelector('.x')?.addEventListener('click', close);
+      setTimeout(close, ms);
+    }
 
+    // ---------- Themed confirm (replaces window.confirm) ----------
+    let _confirmResolve = null;
+    function confirmTheme({ title='Confirm', body='Are you sure?', okText='Yes', cancelText='Cancel' }){
+      return new Promise((resolve)=>{
+        _confirmResolve = resolve;
+        $('confirmTitle').textContent = title;
+        $('confirmBody').textContent = body;
+        $('confirmOk').textContent = okText;
+        $('confirmCancel').textContent = cancelText;
+        $('confirmModal').style.display = 'flex';
+      });
+    }
+    function closeConfirm(result){
+      $('confirmModal').style.display = 'none';
+      if(typeof _confirmResolve === 'function') _confirmResolve(!!result);
+      _confirmResolve = null;
+    }
+    $('confirmClose')?.addEventListener('click', ()=>closeConfirm(false));
+    $('confirmCancel')?.addEventListener('click', ()=>closeConfirm(false));
+    $('confirmOk')?.addEventListener('click', ()=>closeConfirm(true));
+    $('confirmModal')?.addEventListener('click', (e)=>{ if(e.target?.id==='confirmModal') closeConfirm(false); });
+
+    // ---------- Auth (local demo) ----------
+    const AUTH_KEY = 'spendingscout_auth_v4';
+    const USERS_KEY = 'spendingscout_users_v4';
+    const SAVED_EVENTS_KEY = 'spendingscout_saved_events_v4';
     const PREVIEW_CUSTOM_LIMIT = 3;
 
     function getAuth(){ try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch { return null; } }
@@ -670,272 +868,842 @@
     function budgetKey(){
       const a = getAuth();
       if(a?.email) return 'spendingscout_budget_user_' + a.email.toLowerCase();
-      return 'spendingscout_budget_preview_v3';
+      return 'spendingscout_budget_preview_v4';
     }
     function savedEventsKey(){
       const a = getAuth();
       if(a?.email) return SAVED_EVENTS_KEY + '_' + a.email.toLowerCase();
       return SAVED_EVENTS_KEY + '_preview';
     }
-
     function budgetStore(){ return isLoggedIn() ? localStorage : sessionStorage; }
 
-    function load(){
+    function loadBudget(){
       try {
         const raw = budgetStore().getItem(budgetKey());
         return raw ? (JSON.parse(raw) || []) : [];
       } catch { return []; }
     }
-    function save(items){
+    function saveBudget(items){
       budgetStore().setItem(budgetKey(), JSON.stringify(items));
       updateAuthUI();
     }
 
-    function loadSaved() {
+    function loadSaved(){
       try {
         const raw = localStorage.getItem(savedEventsKey());
         return raw ? (JSON.parse(raw) || []) : [];
       } catch { return []; }
     }
+    function saveSaved(list){
+      localStorage.setItem(savedEventsKey(), JSON.stringify(list));
+      renderSaved();
+      renderDashboard();
+      updateAuthUI();
+    }
 
-    function toggleSaveEvent(eventId) {
-      let saved = loadSaved();
-      if (saved.includes(eventId)) {
-        saved = saved.filter(id => id !== eventId);
-      } else {
-        saved.push(eventId);
+    let items = loadBudget();
+    let saved = loadSaved();
+
+    function countCustom(){ return items.filter(x => !x.seeded).length; }
+
+    function openLogin(){ $('loginModal').style.display='flex'; }
+    function closeLogin(){ $('loginModal').style.display='none'; }
+
+    function setAuth(obj){
+      if(obj) localStorage.setItem(AUTH_KEY, JSON.stringify(obj));
+      else localStorage.removeItem(AUTH_KEY);
+
+      items = loadBudget();
+      saved = loadSaved();
+
+      if(items.length === 0 && !isLoggedIn()) seedBudget();
+      renderBudget();
+      renderDemoActivities();
+      renderSaved();
+      renderDashboard();
+
+      // App events needs rebuild after auth
+      APP_STATE.page = 1;
+      renderAppEvents();
+
+      updateAuthUI();
+      handleRoute();
+    }
+
+    // Routing for app pages (doesn't remove demo sections)
+    function showPage(id){
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      if(id){
+        const el = document.getElementById(id);
+        if(el) el.classList.add('active');
       }
-      localStorage.setItem(savedEventsKey(), JSON.stringify(saved));
-      renderEvents();
+    }
+    function handleRoute(){
+      const h = location.hash || '';
+      if(h.startsWith('#/')){
+        if(!isLoggedIn()){
+          showPage(null);
+          location.hash = '#home';
+          return;
+        }
+        if(h === '#/dashboard'){ showPage('page-dashboard'); }
+        else if(h === '#/app-events'){ showPage('page-app-events'); }
+        else if(h === '#/app-budget'){ showPage('page-app-budget'); }
+        else { showPage('page-dashboard'); }
+        window.scrollTo({ top:0, behavior:'smooth' });
+      } else {
+        showPage(null);
+      }
+    }
+    window.addEventListener('hashchange', handleRoute);
+
+    function updateAuthUI(){
+      const a = getAuth();
+      const pill = $('authPill');
+      if(pill) pill.textContent = a?.email ? ('Logged in: ' + a.email) : 'Preview';
+
+      const su = $('openSignupTop');
+      const li = $('openLoginTop');
+      if(a?.email){
+        if(su) su.style.display='none';
+        if(li){ li.textContent='Log out'; li.classList.remove('primary'); }
+        document.querySelectorAll('.navlinks a[data-mode="app"]').forEach(x=>x.style.display='inline-flex');
+        const goDashBtn = $('goDashBtn');
+        if(goDashBtn) goDashBtn.style.display = 'inline-flex';
+      } else {
+        if(su) su.style.display='inline-flex';
+        if(li){ li.textContent='Log in'; li.classList.add('primary'); }
+        document.querySelectorAll('.navlinks a[data-mode="app"]').forEach(x=>x.style.display='none');
+        const goDashBtn = $('goDashBtn');
+        if(goDashBtn) goDashBtn.style.display = 'none';
+      }
+
+      const saveStatus = $('saveStatus');
+      if(saveStatus){
+        saveStatus.textContent = a?.email ? 'Your budget' : 'Preview (session)';
+        saveStatus.style.background = a?.email ? 'rgba(34,197,94,.14)' : 'rgba(255,255,255,.08)';
+        saveStatus.style.borderColor = a?.email ? 'rgba(34,197,94,.22)' : 'rgba(255,255,255,.12)';
+      }
+
+      const syncBtn = $('syncBtn');
+      if(syncBtn){
+        syncBtn.disabled = !a?.email;
+      }
+
+      const chooseFileBtn = $('chooseFileBtn');
+      const clearFileBtn = $('clearFileBtn');
+      const extractBtn = $('extractBtn');
+      if(chooseFileBtn) chooseFileBtn.disabled = !a?.email;
+      if(clearFileBtn) clearFileBtn.disabled = !a?.email;
+      if(extractBtn) extractBtn.disabled = !a?.email;
+
+      const addBtn = $('addBtn');
+      if(!a?.email){
+        const remaining = Math.max(0, PREVIEW_CUSTOM_LIMIT - countCustom());
+        if(addBtn) addBtn.disabled = (remaining <= 0);
+      } else {
+        if(addBtn) addBtn.disabled = false;
+      }
+
+      const dt = $('dashTitle');
+      if(dt){
+        if(a?.email){
+          const name = (a.email.split('@')[0] || 'Wolfpack');
+          dt.textContent = `Welcome, ${name} 🐺`;
+        } else {
+          dt.textContent = 'Welcome back.';
+        }
+      }
+    }
+
+    // Header login/signup buttons
+    $('openSignupTop')?.addEventListener('click', ()=>{ openLogin(); $('email')?.focus(); });
+    $('openLoginTop')?.addEventListener('click', ()=>{
+      if(isLoggedIn()){ setAuth(null); toast('info','Logged out','You are back in Preview mode.'); return; }
+      openLogin(); $('email')?.focus();
+    });
+    $('closeLogin')?.addEventListener('click', closeLogin);
+    $('loginModal')?.addEventListener('click', (e)=>{ if(e.target?.id==='loginModal') closeLogin(); });
+
+    // Signup/Login/Logout logic
+    $('signupBtn')?.addEventListener('click', ()=>{
+      const email = $('email')?.value?.trim();
+      const pw = $('password')?.value || '';
+      if(!email || pw.length < 4){
+        toast('warn','Sign up needs 2 things','Enter an email + a password (4+ characters).');
+        return;
+      }
+      let users = [];
+      try { users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]') || []; } catch { users = []; }
+      if(users.some(u => (u.email||'').toLowerCase() === email.toLowerCase())){
+        toast('warn','Account exists','Use Log in instead.');
+        return;
+      }
+      users.push({ email, pw });
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      setAuth({ email, ts: Date.now() });
+
+      // start clean on new account
+      items = [];
+      saveBudget(items);
+      renderBudget();
+      closeLogin();
+      toast('good','Welcome to SpendingScout','Account created. Your dashboard is ready.');
+      location.hash = '#/dashboard';
+    });
+
+    $('loginBtn')?.addEventListener('click', ()=>{
+      const email = $('email')?.value?.trim();
+      const pw = $('password')?.value || '';
+      if(!email || pw.length < 4){
+        toast('warn','Missing info','Enter your email and password.');
+        return;
+      }
+      let users = [];
+      try { users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]') || []; } catch { users = []; }
+      const ok = users.find(u => (u.email||'').toLowerCase() === email.toLowerCase() && u.pw === pw);
+      if(!ok){
+        toast('bad','Login failed','No matching account found. Sign up to create one (demo).');
+        return;
+      }
+      setAuth({ email, ts: Date.now() });
+      items = loadBudget();
+      saved = loadSaved();
+      renderBudget();
+      renderSaved();
+      renderDashboard();
+      closeLogin();
+      toast('good','Logged in','Your data is loaded on this device.');
+      location.hash = '#/dashboard';
+    });
+
+    $('logoutBtn')?.addEventListener('click', ()=>{ setAuth(null); closeLogin(); });
+
+    $('syncBtn')?.addEventListener('click', ()=>{
+      if(!isLoggedIn()) return;
+      toast('info','Sync (MVP)','In this MVP, budgets save locally on this device. A full version would sync securely across devices.');
+    });
+
+    // ---------- Budget ----------
+    function seedBudget(){
+      const now = Date.now();
+      items = [
+        { id: uid(), ts: now-86400000*1, type:'income', category:'Other', note:'Part-time job paycheck', amount:260, seeded:true },
+        { id: uid(), ts: now-86400000*1, type:'expense', category:'Food', note:'Groceries', amount:44.18, seeded:true },
+        { id: uid(), ts: now-86400000*1, type:'expense', category:'Food', note:'Dining hall / takeout', amount:18.75, seeded:true },
+        { id: uid(), ts: now-86400000*2, type:'expense', category:'Transportation', note:'Gas', amount:32.70, seeded:true },
+        { id: uid(), ts: now-86400000*2, type:'expense', category:'Subscriptions', note:'Spotify', amount:11.99, seeded:true },
+        { id: uid(), ts: now-86400000*3, type:'expense', category:'School', note:'Textbook / supplies', amount:27.50, seeded:true },
+        { id: uid(), ts: now-86400000*4, type:'expense', category:'Entertainment', note:'Movie ticket', amount:13.50, seeded:true }
+      ];
+      saveBudget(items);
+      renderBudget();
+      renderDashboard();
+      toast('info','Loaded demo budget','Student example transactions are now loaded.');
+    }
+
+    function summary(){
+      const income = items.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);
+      const expenses = items.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
+      const net = income - expenses;
+      const cats = {};
+      for(const it of items){
+        if(it.type!=='expense') continue;
+        const c = it.category || 'Other';
+        cats[c] = (cats[c]||0) + Number(it.amount||0);
+      }
+      const totalExp = Object.values(cats).reduce((s,v)=>s+v,0);
+      const entries = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+      return { income, expenses, net, cats, totalExp, entries, topCat: entries.length ? entries[0][0] : '—' };
+    }
+
+    function renderBudget(){
+      const tbody = $('rows');
+      if(!tbody) return;
+      tbody.innerHTML='';
+      const sorted = [...items].sort((a,b)=> (b.ts||0)-(a.ts||0));
+
+      for(const it of sorted){
+        const tr = document.createElement('tr');
+        const d = new Date(it.ts);
+        const dateStr = isFinite(d.getTime()) ? d.toLocaleDateString() : '—';
+        const typeLabel = it.type === 'income' ? 'Income' : 'Expense';
+        const typeClass = it.type === 'income' ? 'success' : 'danger';
+        tr.innerHTML = `
+          <td class="tdMuted">${dateStr}</td>
+          <td class="${typeClass}">${typeLabel}</td>
+          <td>${escapeHtml(it.category || 'Other')}</td>
+          <td class="tdMuted">${escapeHtml(it.note || '')}</td>
+          <td class="money">${money(it.amount)}</td>
+          <td><button class="btn small" data-del="${it.id}" type="button">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      tbody.querySelectorAll('[data-del]').forEach((btn)=>{
+        btn.addEventListener('click', ()=>{
+          const id = btn.getAttribute('data-del');
+          items = items.filter(x=>x.id!==id);
+          saveBudget(items);
+          renderBudget();
+          renderDashboard();
+          toast('good','Deleted','Transaction removed.');
+        });
+      });
+
+      const { income, expenses, net, entries, totalExp, topCat } = summary();
+      $('income').textContent = money(income);
+      $('expenses').textContent = money(expenses);
+      $('net').textContent = money(net);
+      $('net').className = 'v money ' + (net >= 0 ? 'success' : 'danger');
+      $('topCat').textContent = topCat;
+
+      const bars = $('bars');
+      bars.innerHTML='';
+      if(!entries.length){
+        const p = document.createElement('p');
+        p.style.margin='10px 0 0';
+        p.style.color='var(--muted)';
+        p.style.fontSize='13px';
+        p.textContent='Add expenses to see the breakdown.';
+        bars.appendChild(p);
+      } else {
+        for(const [name,val] of entries.slice(0,6)){
+          const pct = totalExp>0 ? Math.round((val/totalExp)*100) : 0;
+          const wrap = document.createElement('div');
+          wrap.innerHTML = `
+            <div class="barRow"><div class="name">${escapeHtml(name)}</div><div class="pct">${pct}% • ${money(val)}</div></div>
+            <div class="bar"><i style="width:${Math.max(6,pct)}%"></i></div>
+          `;
+          bars.appendChild(wrap);
+        }
+      }
+      updateAuthUI();
+    }
+
+    function renderDashboard(){
+      const { income, expenses, net, entries, totalExp, topCat } = summary();
+
+      $('dashIncome')?.textContent = money(income);
+      $('dashExpenses')?.textContent = money(expenses);
+
+      const dn = $('dashNet');
+      if(dn){
+        dn.textContent = money(net);
+        dn.className = 'v money ' + (net >= 0 ? 'success' : 'danger');
+      }
+      $('dashTopCat')?.textContent = topCat;
+
+      const bars = $('dashBars');
+      if(bars){
+        bars.innerHTML = '';
+        if(!entries.length){
+          const p = document.createElement('p');
+          p.style.margin='10px 0 0';
+          p.style.color='var(--muted)';
+          p.style.fontSize='13px';
+          p.textContent='Add expenses to see your breakdown.';
+          bars.appendChild(p);
+        } else {
+          for(const [name,val] of entries.slice(0,6)){
+            const pct = totalExp>0 ? Math.round((val/totalExp)*100) : 0;
+            const wrap = document.createElement('div');
+            wrap.innerHTML = `
+              <div class="barRow"><div class="name">${escapeHtml(name)}</div><div class="pct">${pct}% • ${money(val)}</div></div>
+              <div class="bar"><i style="width:${Math.max(6,pct)}%"></i></div>
+            `;
+            bars.appendChild(wrap);
+          }
+        }
+      }
+
+      const dashSaved = $('savedEventsDash');
+      if(dashSaved){
+        dashSaved.innerHTML = '';
+        if(!isLoggedIn()){
+          dashSaved.innerHTML = `<div style="color:var(--muted2); font-size:12px;">Log in to see saved events.</div>`;
+        } else if(!saved.length){
+          dashSaved.innerHTML = `<div style="color:var(--muted2); font-size:12px;">No saved events yet — save one from Events.</div>`;
+        } else {
+          for(const ev of saved.slice().reverse().slice(0,4)){
+            const row = document.createElement('div');
+            row.style.border = '1px solid rgba(255,255,255,.12)';
+            row.style.borderRadius = '14px';
+            row.style.padding = '12px';
+            row.style.background = 'rgba(255,255,255,.04)';
+            row.innerHTML = `<div style="font-weight:800;">${escapeHtml(ev.title)}</div>
+                             <div style="color:var(--muted2); font-size:12px;">${escapeHtml(ev.dateLabel)} • ${escapeHtml(ev.location)}</div>`;
+            dashSaved.appendChild(row);
+          }
+        }
+      }
+    }
+
+    function addTransaction(){
+      if(!isLoggedIn()){
+        const remaining = PREVIEW_CUSTOM_LIMIT - countCustom();
+        if(remaining <= 0){
+          toast('warn','Preview limit reached','You can add 3 custom transactions in Preview. Log in for unlimited.');
+          openLogin();
+          return;
+        }
+      }
+      const type = $('type').value;
+      const category = $('category').value;
+      const amountRaw = $('amount').value.trim();
+      const note = $('note').value.trim();
+      const amount = Number(amountRaw);
+      if(!isFinite(amount) || amount<=0){
+        toast('warn','Invalid amount','Enter a valid amount like 12.50.');
+        return;
+      }
+      items.push({ id: uid(), ts: Date.now(), type, category, note, amount, seeded:false });
+      saveBudget(items);
+      renderBudget();
+      renderDashboard();
+      $('amount').value='';
+      $('note').value='';
+      toast('good','Added','Transaction saved.');
+    }
+
+    async function resetAll(){
+      const ok = await confirmTheme({
+        title:'Reset budget?',
+        body:'This clears data for Preview or your account on this device.',
+        okText:'Reset',
+        cancelText:'Cancel'
+      });
+      if(!ok) return;
+      items=[];
+      saveBudget(items);
+      renderBudget();
+      renderDashboard();
+      if(!isLoggedIn()) seedBudget();
+      toast('info','Reset complete','Your budget view was cleared.');
+    }
+
+    $('addBtn')?.addEventListener('click', addTransaction);
+    $('seedBtn')?.addEventListener('click', ()=>{
+      if(isLoggedIn()){
+        toast('warn','Preview demo only','Log out to load the student example data.');
+        return;
+      }
+      seedBudget();
+    });
+    $('resetBtn')?.addEventListener('click', resetAll);
+    $('amount')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTransaction(); });
+    $('note')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTransaction(); });
+
+    document.querySelectorAll('[data-chip]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        try{
+          const d = JSON.parse(el.getAttribute('data-chip'));
+          $('type').value = d.type || 'expense';
+          $('category').value = d.category || 'Other';
+          $('amount').value = d.amount || '';
+          $('note').value = d.note || '';
+          $('amount')?.focus();
+        } catch {}
+      });
+    });
+
+    // ---------- Statement upload (drag/drop + click) ----------
+    const stmtFile = $('stmtFile');
+    const stmtPreview = $('stmtPreview');
+    const dropArea = $('dropArea');
+    const chooseFileBtn = $('chooseFileBtn');
+    const clearFileBtn = $('clearFileBtn');
+    const uploadStatus = $('uploadStatus');
+
+    function clearStatement(){
+      if(stmtFile) stmtFile.value = '';
+      if(stmtPreview){ stmtPreview.style.display='none'; stmtPreview.innerHTML=''; }
+      if(uploadStatus) uploadStatus.textContent = 'No file selected';
+    }
+    function acceptFile(f){
+      if(!isLoggedIn()){
+        toast('warn','Login required','Log in to enable statement image uploads.');
+        openLogin();
+        return;
+      }
+      if(!f) return;
+      const url = URL.createObjectURL(f);
+      if(stmtPreview){
+        stmtPreview.style.display='block';
+        stmtPreview.innerHTML = `<img alt="Statement preview" src="${url}" />`;
+      }
+      if(uploadStatus) uploadStatus.textContent = f.name || 'Selected';
+      toast('good','Uploaded (local)','Image is previewed on this device.');
+    }
+
+    function chooseFile(){
+      if(!isLoggedIn()){ toast('warn','Login required','Log in to enable uploads.'); openLogin(); return; }
+      stmtFile?.click();
+    }
+
+    chooseFileBtn?.addEventListener('click', chooseFile);
+    dropArea?.addEventListener('click', chooseFile);
+    dropArea?.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') chooseFile(); });
+    clearFileBtn?.addEventListener('click', clearStatement);
+
+    stmtFile?.addEventListener('change', ()=>{
+      const f = stmtFile.files && stmtFile.files[0];
+      if(!f){ clearStatement(); return; }
+      acceptFile(f);
+    });
+
+    function prevent(e){ e.preventDefault(); e.stopPropagation(); }
+    ['dragenter','dragover'].forEach(evt=>{
+      dropArea?.addEventListener(evt, (e)=>{ prevent(e); dropArea.classList.add('drag'); });
+    });
+    ['dragleave','drop'].forEach(evt=>{
+      dropArea?.addEventListener(evt, (e)=>{ prevent(e); dropArea.classList.remove('drag'); });
+    });
+    dropArea?.addEventListener('drop', (e)=>{
+      const dt = e.dataTransfer;
+      const f = dt && dt.files && dt.files[0];
+      if(f) acceptFile(f);
+    });
+
+    $('extractBtn')?.addEventListener('click', ()=>{
+      if(!isLoggedIn()){
+        toast('warn','Login required','Log in to enable prefill.');
+        openLogin();
+        return;
+      }
+      $('type').value = 'expense';
+      $('category').value = 'Food';
+      $('amount').value = '44.18';
+      $('note').value = 'Target groceries (from statement image)';
+      toast('info','Prefill complete','Review the fields and click Add.');
+    });
+
+    // ---------- Events ----------
+    // Demo page must show 3 events total:
+    const DEMO_ACTIVITIES = [
+      { id:'demo1', audience:'campus', title:'Student Organization Social Night', dateLabel:'Next week • Evening', location:'Student Union / Main Campus', cost:'Free', link:'#' },
+      { id:'demo2', audience:'triangle', title:'Local Concert / Live Music', dateLabel:'This month • Night', location:'Downtown venue (Raleigh)', cost:'Ticketed', link:'#' },
+      { id:'demo3', audience:'triangle', title:'Sports Game (Basketball/Hockey)', dateLabel:'This month • Evening', location:'Arena (Raleigh)', cost:'Ticketed', link:'#' }
+    ];
+
+    function renderDemoActivities(){
+      const wrap = $('activityCards');
+      if(!wrap) return;
+      const filter = ($('activityFilter')?.value || 'all');
+      const list = DEMO_ACTIVITIES.filter(a => filter==='all' ? true : a.audience===filter);
+      wrap.innerHTML='';
+      for(const a of list){ // stays at 3 max by design
+        const card = document.createElement('div');
+        card.className = 'card';
+        const isFree = (a.cost || '').toLowerCase() === 'free';
+        const tagBg = isFree
+          ? 'background:rgba(34,197,94,.14); border-color:rgba(34,197,94,.22);'
+          : 'background:rgba(245,158,11,.14); border-color:rgba(245,158,11,.22);';
+        const scope = a.audience === 'campus' ? 'NCSU' : 'Triangle';
+        card.innerHTML = `
+          <div class="tag" style="${tagBg}">🎟️ ${escapeHtml(a.cost)} • ${scope}</div>
+          <h3>${escapeHtml(a.title)}</h3>
+          <p style="margin:0; color:var(--muted);">${escapeHtml(a.dateLabel)}<br/>${escapeHtml(a.location)}</p>
+          <div style="height:12px"></div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="btn" href="${a.link}" target="_blank" rel="noreferrer" style="width:fit-content">View details</a>
+            <button class="btn" data-save="${escapeHtml(a.id)}" type="button">Save</button>
+          </div>
+        `;
+        wrap.appendChild(card);
+      }
+      hookSaveButtons(wrap, (id)=>DEMO_ACTIVITIES.find(x=>x.id===id));
+      updateAuthUI();
+    }
+
+    $('activityFilter')?.addEventListener('change', renderDemoActivities);
+
+    // Full 50-event dataset for the "All Events" page (example listings).
+    // Dates are real Date objects; we show a readable label.
+    function formatDate(dt){
+      const d = new Date(dt);
+      const opts = { weekday:'short', month:'short', day:'numeric' };
+      return isFinite(d.getTime()) ? d.toLocaleDateString(undefined, opts) : '—';
+    }
+    function addDays(base, days){ const d = new Date(base); d.setDate(d.getDate()+days); return d; }
+
+    function build50Events(){
+      const base = new Date(); // today on user's device
+      const templates = [
+        // campus
+        {audience:'campus', cost:'Free',     title:'Wolfpack Fitness Pop-Up', location:'Carmichael Gym'},
+        {audience:'campus', cost:'Free',     title:'Student Org Fair Mini', location:'Talley Student Union'},
+        {audience:'campus', cost:'Free',     title:'Career Prep Workshop', location:'Hill Library'},
+        {audience:'campus', cost:'Free',     title:'Late Night Study + Snacks', location:'D.H. Hill Commons'},
+        {audience:'campus', cost:'Ticketed', title:'Campus Comedy Night', location:'Witherspoon Cinema'},
+        {audience:'campus', cost:'Free',     title:'Wellness Check-In Event', location:'Wellness & Recreation'},
+        {audience:'campus', cost:'Free',     title:'Engineering Club Meetup', location:'EB2 Lobby'},
+        {audience:'campus', cost:'Free',     title:'Sustainability Table', location:'Brickyard'},
+        // triangle
+        {audience:'triangle', cost:'Free',     title:'Downtown Art Walk', location:'Downtown Raleigh'},
+        {audience:'triangle', cost:'Ticketed', title:'Live Music Night', location:'Raleigh Venue'},
+        {audience:'triangle', cost:'Free',     title:'Food Truck Rodeo', location:'City Plaza'},
+        {audience:'triangle', cost:'Ticketed', title:'Hockey Game Night', location:'Lenovo Center'},
+        {audience:'triangle', cost:'Ticketed', title:'College Basketball Game', location:'Arena (Triangle)'},
+        {audience:'triangle', cost:'Free',     title:'Farmers Market Trip', location:'State Farmers Market'},
+        {audience:'triangle', cost:'Ticketed', title:'Comedy Show', location:'Raleigh Theater'},
+        {audience:'triangle', cost:'Free',     title:'Museum Free Day', location:'Downtown Museums'}
+      ];
+
+      const out = [];
+      for(let i=0;i<50;i++){
+        const t = templates[i % templates.length];
+        const days = 2 + (i*2) + (i%3); // spreads out across ~3 months
+        const dt = addDays(base, days);
+        const startHour = (i % 5 === 0) ? 19 : (i % 4 === 0) ? 18 : (i % 3 === 0) ? 17 : 11;
+        dt.setHours(startHour, 0, 0, 0);
+
+        const price = (t.cost === 'Free') ? 0 : (12 + (i%6)*5);
+        const tag = t.audience === 'campus' ? 'NCSU' : 'Triangle';
+
+        // "Recommended" score: free + campus + soon + cheaper
+        const soonBonus = Math.max(0, 40 - Math.floor((dt - base)/(1000*60*60*24)));
+        const score =
+          (t.cost === 'Free' ? 55 : 20) +
+          (t.audience === 'campus' ? 18 : 10) +
+          Math.min(40, soonBonus) +
+          Math.max(0, 18 - Math.min(18, price/5));
+
+        out.push({
+          id: 'ev' + (i+1),
+          audience: t.audience,
+          cost: t.cost,
+          price,
+          title: t.title + (i%7===0 ? ' (Special)' : ''),
+          date: dt.toISOString(),
+          dateLabel: `${formatDate(dt)} • ${startHour}:00`,
+          location: t.location,
+          link: '#',
+          recommendedScore: Math.round(score),
+          scopeTag: tag
+        });
+      }
+      return out;
+    }
+
+    const ALL_EVENTS_50 = build50Events();
+
+    // Save/unsave
+    function hookSaveButtons(container, getEventById){
+      container.querySelectorAll('[data-save]').forEach((btn)=>{
+        btn.addEventListener('click', ()=>{
+          const id = btn.getAttribute('data-save');
+          if(!isLoggedIn()){
+            toast('warn','Create an account','Log in to save events to your list.');
+            openLogin();
+            return;
+          }
+          const ev = getEventById(id);
+          if(!ev) return;
+
+          // Normalize shape for saved list
+          const savedObj = {
+            id: ev.id,
+            title: ev.title,
+            date: ev.date || null,
+            dateLabel: ev.dateLabel || '—',
+            location: ev.location || '—',
+            cost: ev.cost || '—',
+            ts: Date.now()
+          };
+
+          if(saved.some(x=>x.id===savedObj.id)){
+            toast('info','Already saved','That event is already in your list.');
+            return;
+          }
+          saved.push(savedObj);
+          saveSaved(saved);
+          toast('good','Saved','Added to your saved list.');
+        });
+      });
+      updateAuthUI();
+    }
+
+    function renderSaved(){
+      const s1 = $('savedEventsApp');
+      if(s1){
+        s1.innerHTML = '';
+        if(!saved.length){
+          s1.innerHTML = `<div style="color:var(--muted2); font-size:12px;">No saved events yet.</div>`;
+        } else {
+          for(const ev of saved.slice().reverse()){
+            const row = document.createElement('div');
+            row.style.border='1px solid rgba(255,255,255,.12)';
+            row.style.borderRadius='14px';
+            row.style.padding='12px';
+            row.style.background='rgba(255,255,255,.04)';
+            row.innerHTML = `
+              <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+                <div>
+                  <div style="font-weight:800;">${escapeHtml(ev.title)}</div>
+                  <div style="color:var(--muted2); font-size:12px;">${escapeHtml(ev.dateLabel)} • ${escapeHtml(ev.location)}</div>
+                </div>
+                <button class="btn small" data-unsave="${escapeHtml(ev.id)}" type="button">Remove</button>
+              </div>
+            `;
+            s1.appendChild(row);
+          }
+          s1.querySelectorAll('[data-unsave]').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+              const id = btn.getAttribute('data-unsave');
+              saved = saved.filter(x=>x.id!==id);
+              saveSaved(saved);
+              toast('info','Removed','Event removed from saved list.');
+            });
+          });
+        }
+      }
       renderDashboard();
     }
 
-    // --- Data ---
-    const ACTIVITIES = [
-      { id: '1', name: 'Wolfpack Football vs. Wake Forest', price: 0, cat: 'campus', date: 'Oct 12' },
-      { id: '2', name: 'Coffee at Cup A Joe', price: 6.50, cat: 'triangle', date: 'Daily' },
-      { id: '3', name: 'First Friday Raleigh', price: 0, cat: 'triangle', date: 'Monthly' },
-      { id: '4', name: 'Talley Student Union Bowling', price: 5.00, cat: 'campus', date: 'Daily' }
-    ];
+    // All Events page: sorting + paging
+    const APP_STATE = { page: 1 };
 
-    const SEED_DATA = [
-      { id: 's1', type: 'income', category: 'Other', amount: 500, note: 'Monthly Allowance', date: '2024-02-01' },
-      { id: 's2', type: 'expense', category: 'School', amount: 85.50, note: 'Textbooks', date: '2024-02-03' },
-      { id: 's3', type: 'expense', category: 'Food', amount: 15.25, note: 'Howling Cow Ice Cream', date: '2024-02-05' }
-    ];
+    function getFilteredEvents(){
+      const area = $('activityFilterApp')?.value || 'all';
+      const sort = $('sortApp')?.value || 'recommended';
+      const q = ($('searchApp')?.value || '').trim().toLowerCase();
 
-    // --- Core Logic ---
-    function render() {
-      const items = load();
-      const rows = $('rows');
-      rows.innerHTML = items.length ? '' : '<tr><td colspan="6" style="text-align:center; color:var(--muted2); padding:40px 0;">No transactions yet. Add one above!</td></tr>';
-      
-      let inc = 0, exp = 0;
-      const cats = {};
+      let list = ALL_EVENTS_50.slice();
 
-      items.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
-        const isExp = item.type === 'expense';
-        const amt = parseFloat(item.amount);
-        if (isExp) { 
-          exp += amt; 
-          cats[item.category] = (cats[item.category] || 0) + amt;
-        } else { 
-          inc += amt; 
-        }
+      if(area !== 'all') list = list.filter(e => e.audience === area);
+      if(q) list = list.filter(e =>
+        (e.title||'').toLowerCase().includes(q) ||
+        (e.location||'').toLowerCase().includes(q) ||
+        (e.scopeTag||'').toLowerCase().includes(q)
+      );
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="tdMuted">${item.date.slice(5)}</td>
-          <td><span class="tag" style="margin:0; font-size:10px; padding:2px 6px;">${item.type}</span></td>
-          <td>${item.category}</td>
-          <td>${escapeHtml(item.note)}</td>
-          <td class="money ${isExp ? 'danger' : 'success'}">${isExp ? '-' : '+'}${money(amt)}</td>
-          <td style="text-align:right"><button class="btn" onclick="deleteItem('${item.id}')" style="padding:4px 8px;">×</button></td>
-        `;
-        rows.appendChild(tr);
-      });
-
-      // Update Summary
-      const net = inc - exp;
-      $('income').textContent = money(inc);
-      $('expenses').textContent = money(exp);
-      $('net').textContent = money(net);
-      $('net').className = 'v money ' + (net >= 0 ? 'success' : 'danger');
-
-      // Top Category
-      const top = Object.entries(cats).sort((a,b) => b[1] - a[1])[0];
-      $('topCat').textContent = top ? top[0] : '—';
-
-      // Bars
-      const bars = $('bars');
-      bars.innerHTML = '';
-      Object.entries(cats).forEach(([name, val]) => {
-        const pct = Math.min(100, (val / (inc || val)) * 100).toFixed(0);
-        bars.innerHTML += `
-          <div class="barRow">
-            <span class="name">${name}</span>
-            <span class="pct">${money(val)} (${pct}%)</span>
-          </div>
-          <div class="bar"><i style="width:${pct}%; background:var(--brand)"></i></div>
-        `;
-      });
-      renderDashboard(); // Keep dash in sync
-    }
-
-    function renderEvents() {
-      const saved = loadSaved();
-      const filter = $('activityFilter').value;
-      const filterApp = $('activityFilterApp').value;
-      
-      const draw = (containerId, currentFilter) => {
-        const container = $(containerId);
-        if(!container) return;
-        container.innerHTML = '';
-        ACTIVITIES.filter(a => currentFilter === 'all' || a.cat === currentFilter).forEach(a => {
-          const isSaved = saved.includes(a.id);
-          container.innerHTML += `
-            <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; border-color:${isSaved ? 'var(--brand)' : 'rgba(255,255,255,.12)'}">
-              <div>
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                   <div class="tag" style="background:${a.cat==='campus'?'rgba(204,0,0,.1)':'rgba(59,130,246,.1)'}">${a.cat}</div>
-                   <div style="font-size:12px; color:var(--muted2)">${a.date}</div>
-                </div>
-                <h3>${a.name}</h3>
-                <p class="${a.price === 0 ? 'success' : ''}">${a.price === 0 ? 'FREE' : money(a.price)}</p>
-              </div>
-              <button class="btn ${isSaved?'primary':''}" onclick="toggleSaveEvent('${a.id}')" style="margin-top:12px; width:100%;">
-                ${isSaved ? '✓ Saved' : 'Save Event'}
-              </button>
-            </div>
-          `;
-        });
-      };
-      draw('activityCards', filter);
-      draw('activityCardsApp', filterApp);
-    }
-
-    function renderDashboard() {
-      if(!isLoggedIn()) return;
-      const items = load();
-      let inc = 0, exp = 0;
-      items.forEach(i => i.type === 'expense' ? exp += parseFloat(i.amount) : inc += parseFloat(i.amount));
-      
-      $('dashIncome').textContent = money(inc);
-      $('dashExpenses').textContent = money(exp);
-      $('dashNet').textContent = money(inc - exp);
-      
-      // Saved Events List
-      const savedIds = loadSaved();
-      const container = $('savedEventsDash');
-      const appContainer = $('savedEventsApp');
-      const list = ACTIVITIES.filter(a => savedIds.includes(a.id));
-      
-      const html = list.length ? list.map(a => `
-        <div class="card" style="padding:10px; background:rgba(255,255,255,.03); display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:13px;">${a.name}</span>
-          <button class="btn" onclick="toggleSaveEvent('${a.id}')" style="padding:4px 8px;">×</button>
-        </div>
-      `).join('') : '<p style="font-size:12px; color:var(--muted2)">No events saved yet.</p>';
-      
-      if(container) container.innerHTML = html;
-      if(appContainer) appContainer.innerHTML = html;
-    }
-
-    // --- Actions ---
-    function deleteItem(id) {
-      save(load().filter(i => i.id !== id));
-      render();
-    }
-
-    $('addBtn').onclick = () => {
-      const items = load();
-      if (!isLoggedIn() && items.filter(i => !i.id.startsWith('s')).length >= PREVIEW_CUSTOM_LIMIT) {
-        alert("Preview limit reached (3 custom items). Log in for unlimited tracking!");
-        return;
-      }
-      const val = parseFloat($('amount').value);
-      if (!val) return alert("Enter an amount");
-      
-      const newItem = {
-        id: uid(),
-        type: $('type').value,
-        category: $('category').value,
-        amount: val,
-        note: $('note').value || 'Untitled',
-        date: new Date().toISOString().split('T')[0]
-      };
-      save([...items, newItem]);
-      render();
-      $('amount').value = ''; $('note').value = '';
-    };
-
-    $('seedBtn').onclick = () => { save(SEED_DATA); render(); };
-    $('resetBtn').onclick = () => { if(confirm("Clear all?")) { save([]); render(); } };
-
-    // --- Auth Logic ---
-    function updateAuthUI() {
-      const user = getAuth();
-      const loggedIn = !!user;
-      $('authPill').textContent = loggedIn ? user.email : 'Preview';
-      $('authPill').style.borderColor = loggedIn ? 'var(--good)' : 'rgba(255,255,255,.12)';
-      $('goDashBtn').style.display = loggedIn ? 'inline-flex' : 'none';
-      document.querySelectorAll('[data-mode="app"]').forEach(el => el.style.display = loggedIn ? 'block' : 'none');
-      
-      $('openLoginTop').style.display = loggedIn ? 'none' : 'block';
-      $('openSignupTop').style.display = loggedIn ? 'none' : 'block';
-      $('logoutBtn').style.display = loggedIn ? 'block' : 'none';
-      $('signupBtn').style.display = loggedIn ? 'none' : 'block';
-      $('loginBtn').style.display = loggedIn ? 'none' : 'block';
-    }
-
-    $('openLoginTop').onclick = () => $('loginModal').style.display = 'flex';
-    $('openSignupTop').onclick = () => $('loginModal').style.display = 'flex';
-    $('closeLogin').onclick = () => $('loginModal').style.display = 'none';
-
-    $('loginBtn').onclick = () => {
-      const email = $('email').value;
-      if(!email.includes('@')) return alert("Enter a valid email");
-      localStorage.setItem(AUTH_KEY, JSON.stringify({ email }));
-      $('loginModal').style.display = 'none';
-      location.hash = '#/dashboard';
-      updateAuthUI();
-      render();
-    };
-
-    $('logoutBtn').onclick = () => {
-      localStorage.removeItem(AUTH_KEY);
-      updateAuthUI();
-      location.hash = '#home';
-      render();
-    };
-
-    // --- Simple Router ---
-    function route() {
-      const h = location.hash || '#home';
-      document.querySelectorAll('.page, .section').forEach(el => el.classList.remove('active'));
-      
-      if (h.startsWith('#/')) {
-        const pageId = 'page-' + h.replace('#/', '');
-        const page = $(pageId);
-        if (page) {
-          page.classList.add('active');
-          window.scrollTo(0,0);
-        }
+      if(sort === 'date'){
+        list.sort((a,b)=> new Date(a.date) - new Date(b.date));
       } else {
-        // Normal scroll sections stay visible for demo
+        // recommended: high score then soonest
+        list.sort((a,b)=> (b.recommendedScore - a.recommendedScore) || (new Date(a.date) - new Date(b.date)));
       }
+      return list;
     }
 
-    window.onhashchange = route;
-    $('activityFilter').onchange = renderEvents;
-    $('activityFilterApp').onchange = renderEvents;
-    $('yr').textContent = new Date().getFullYear();
+    function renderPager(total, pageSize){
+      const btns = $('pagerBtns');
+      const meta = $('resultsMeta');
+      if(meta) meta.innerHTML = `Showing <strong>${total}</strong> results`;
+      if(!btns) return;
 
-    // Init
-    route();
+      btns.innerHTML = '';
+
+      const pages = Math.max(1, Math.ceil(total / pageSize));
+      APP_STATE.page = Math.min(APP_STATE.page, pages);
+
+      const mk = (label, onClick, disabled=false, active=false) => {
+        const b = document.createElement('button');
+        b.className = 'pageBtn' + (active ? ' active' : '');
+        b.type = 'button';
+        b.textContent = label;
+        b.disabled = disabled;
+        b.addEventListener('click', onClick);
+        return b;
+      };
+
+      btns.appendChild(mk('‹', ()=>{ APP_STATE.page = Math.max(1, APP_STATE.page-1); renderAppEvents(); }, APP_STATE.page===1));
+
+      // show up to 7 page buttons around current
+      const start = Math.max(1, APP_STATE.page - 3);
+      const end = Math.min(pages, start + 6);
+
+      if(start > 1){
+        btns.appendChild(mk('1', ()=>{ APP_STATE.page = 1; renderAppEvents(); }, false, APP_STATE.page===1));
+        if(start > 2){
+          const dots = document.createElement('span');
+          dots.style.color='var(--muted2)';
+          dots.textContent='…';
+          btns.appendChild(dots);
+        }
+      }
+
+      for(let p=start; p<=end; p++){
+        btns.appendChild(mk(String(p), ()=>{ APP_STATE.page = p; renderAppEvents(); }, false, APP_STATE.page===p));
+      }
+
+      if(end < pages){
+        if(end < pages-1){
+          const dots = document.createElement('span');
+          dots.style.color='var(--muted2)';
+          dots.textContent='…';
+          btns.appendChild(dots);
+        }
+        btns.appendChild(mk(String(pages), ()=>{ APP_STATE.page = pages; renderAppEvents(); }, false, APP_STATE.page===pages));
+      }
+
+      btns.appendChild(mk('›', ()=>{ APP_STATE.page = Math.min(pages, APP_STATE.page+1); renderAppEvents(); }, APP_STATE.page===pages));
+    }
+
+    function renderAppEvents(){
+      const wrap = $('activityCardsApp');
+      if(!wrap) return;
+
+      const pageSize = Number($('pageSizeApp')?.value || 9);
+      const list = getFilteredEvents();
+      const pages = Math.max(1, Math.ceil(list.length / pageSize));
+      APP_STATE.page = Math.min(APP_STATE.page, pages);
+
+      const start = (APP_STATE.page - 1) * pageSize;
+      const chunk = list.slice(start, start + pageSize);
+
+      wrap.innerHTML = '';
+      for(const e of chunk){
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const isFree = (e.cost || '').toLowerCase() === 'free';
+        const tagBg = isFree
+          ? 'background:rgba(34,197,94,.14); border-color:rgba(34,197,94,.22);'
+          : 'background:rgba(245,158,11,.14); border-color:rgba(245,158,11,.22);';
+
+        const costLabel = isFree ? 'Free' : `Ticketed ~$${e.price}`;
+        const sub = `${e.dateLabel}<br/>${e.location}`;
+
+        card.innerHTML = `
+          <div class="tag" style="${tagBg}">🎟️ ${escapeHtml(costLabel)} • ${escapeHtml(e.scopeTag)}</div>
+          <h3>${escapeHtml(e.title)}</h3>
+          <p style="margin:0; color:var(--muted);">${sub}</p>
+          <div style="height:12px"></div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="btn" href="${e.link}" target="_blank" rel="noreferrer" style="width:fit-content">View details</a>
+            <button class="btn" data-save="${escapeHtml(e.id)}" type="button">Save</button>
+          </div>
+          <div style="height:10px"></div>
+          <div style="color:var(--muted2); font-size:12px;">Recommended score: <b>${e.recommendedScore}</b></div>
+        `;
+        wrap.appendChild(card);
+      }
+
+      hookSaveButtons(wrap, (id)=>ALL_EVENTS_50.find(x=>x.id===id));
+      renderPager(list.length, pageSize);
+      updateAuthUI();
+    }
+
+    // App events controls
+    $('activityFilterApp')?.addEventListener('change', ()=>{ APP_STATE.page=1; renderAppEvents(); });
+    $('sortApp')?.addEventListener('change', ()=>{ APP_STATE.page=1; renderAppEvents(); });
+    $('pageSizeApp')?.addEventListener('change', ()=>{ APP_STATE.page=1; renderAppEvents(); });
+    $('searchApp')?.addEventListener('input', ()=>{ APP_STATE.page=1; renderAppEvents(); });
+
+    // ---------- Init ----------
+    document.getElementById('yr').textContent = new Date().getFullYear();
     updateAuthUI();
-    render();
-    renderEvents();
+
+    if(items.length === 0 && !isLoggedIn()) seedBudget();
+    else renderBudget();
+
+    renderDemoActivities();
+    renderSaved();
+    renderDashboard();
+    renderAppEvents();
+    handleRoute();
   </script>
 </body>
 </html>
