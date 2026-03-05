@@ -3,27 +3,27 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SpendingScout — Budgeting + Events (NCSU)</title>
-  <meta name="description" content="Track your spending and browse NCSU + Raleigh events." />
-
+  <title>SpendingScout — NCSU Budgeting + Events</title>
+  <meta name="description" content="Track your spending and discover events you can afford near NC State." />
   <style>
     :root{
-      --bg:#0b1220;
+      --ncsu-red:#cc0000;
+      --ncsu-red2:#b00000;
+      --ink:#0b0f14;
+      --panel:#101826;
+      --panel2:#0f1420;
       --text:rgba(255,255,255,.92);
       --muted:rgba(255,255,255,.68);
       --muted2:rgba(255,255,255,.52);
-
-      /* NCSU-inspired theme (not official branding) */
-      --brand:#cc0000;
-      --brand2:#ff3b3b;
-      --good:#22c55e;
+      --line:rgba(255,255,255,.10);
+      --good:#34d399;
       --warn:#f59e0b;
-      --blue:#3b82f6;
-
-      --radius:18px;
-      --shadow:0 18px 60px rgba(0,0,0,.45);
-      --max:1120px;
-      --font:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+      --bad:#fb7185;
+      --shadow: 0 18px 45px rgba(0,0,0,.38);
+      --radius: 18px;
+      --radius2: 14px;
+      --ring: 0 0 0 4px rgba(204,0,0,.18);
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -32,1678 +32,1522 @@
       font-family:var(--font);
       color:var(--text);
       background:
-        radial-gradient(1200px 600px at 20% 0%, rgba(204,0,0,.26), transparent 60%),
-        radial-gradient(1000px 520px at 90% 20%, rgba(255,59,59,.18), transparent 65%),
-        radial-gradient(900px 500px at 30% 100%, rgba(34,197,94,.16), transparent 60%),
-        var(--bg);
-      line-height:1.45;
+        radial-gradient(1100px 600px at 18% 0%, rgba(204,0,0,.18), transparent 55%),
+        radial-gradient(900px 520px at 92% 18%, rgba(255,255,255,.08), transparent 55%),
+        radial-gradient(900px 520px at 55% 100%, rgba(204,0,0,.10), transparent 60%),
+        linear-gradient(180deg, #070a0f 0%, #06080d 70%, #04060a 100%);
+      overflow-x:hidden;
     }
-    a{color:inherit; text-decoration:none}
-    .container{max-width:var(--max); margin:0 auto; padding:0 20px}
-
-    header{
+    a{color:inherit}
+    .wrap{max-width:1120px;margin:0 auto;padding:18px 18px 36px}
+    /* Navbar */
+    .nav{
       position:sticky; top:0; z-index:50;
+      background:rgba(5,7,11,.72);
       backdrop-filter:saturate(140%) blur(12px);
-      background:linear-gradient(to bottom, rgba(11,18,32,.86), rgba(11,18,32,.55));
-      border-bottom:1px solid rgba(255,255,255,.08);
+      border-bottom:1px solid var(--line);
     }
-    .nav{display:flex; align-items:center; justify-content:space-between; padding:14px 0; gap:14px}
-    .brand{display:flex; align-items:center; gap:10px; font-weight:820; letter-spacing:.2px}
-    .logo{
-      width:36px; height:36px; border-radius:14px;
-      background:conic-gradient(from 210deg, var(--brand), var(--brand2), rgba(255,255,255,.12), var(--brand));
-      border:1px solid rgba(255,255,255,.18);
-      box-shadow:0 12px 30px rgba(204,0,0,.22);
-    }
-    .navlinks{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    .navlinks a{
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;max-width:1120px;margin:0 auto}
+    .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+    .brand svg{width:46px;height:46px;flex:0 0 46px;filter:drop-shadow(0 12px 18px rgba(0,0,0,.35))}
+    .brand .name{display:flex;flex-direction:column;line-height:1.05}
+    .brand .name b{font-size:16px;letter-spacing:.2px}
+    .brand .name span{font-size:12.5px;color:var(--muted)}
+    .navlinks{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .tab{
+      border:1px solid transparent;
+      background:transparent;
       color:var(--muted);
-      font-size:14px;
-      padding:8px 10px;
-      border-radius:10px;
+      padding:10px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:600;
+      letter-spacing:.1px;
+      transition:.18s ease;
+      display:flex;align-items:center;gap:8px;
     }
-    .navlinks a:hover{background:rgba(255,255,255,.06); color:var(--text)}
-    .navlinks a[data-mode="app"]{display:none;} /* shown after login */
-
+    .tab:hover{color:var(--text);border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.03)}
+    .tab.active{color:var(--text);border-color:rgba(204,0,0,.35);background:rgba(204,0,0,.10);box-shadow:var(--ring)}
     .btn{
-      display:inline-flex; align-items:center; justify-content:center;
-      gap:10px;
-      padding:10px 14px;
-      border-radius:12px;
       border:1px solid rgba(255,255,255,.14);
       background:rgba(255,255,255,.06);
       color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
       cursor:pointer;
-      transition:transform .08s ease, background .18s ease, border-color .18s ease;
-      user-select:none;
-      font-weight:650;
+      font-weight:700;
+      transition:.18s ease;
     }
-    .btn:hover{background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.18)}
-    .btn:active{transform:translateY(1px)}
+    .btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.10)}
     .btn.primary{
-      border-color:rgba(204,0,0,.40);
-      background:linear-gradient(135deg, rgba(204,0,0,.95), rgba(255,59,59,.78));
-      box-shadow:0 16px 40px rgba(204,0,0,.20);
+      border-color:rgba(204,0,0,.45);
+      background:linear-gradient(180deg, rgba(204,0,0,.95), rgba(176,0,0,.95));
+      box-shadow: 0 18px 30px rgba(204,0,0,.18);
     }
-    .btn.ghost{background:transparent}
-    .btn.small{padding:7px 10px; border-radius:10px; font-size:13px}
-
-    main{padding:18px 0 70px}
-    .heroCard{
-      padding:22px;
-      border-radius:var(--radius);
-      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    .btn.primary:hover{filter:saturate(1.1) brightness(1.02)}
+    .btn.ghost{
+      background:transparent;border-color:rgba(255,255,255,.14);color:var(--muted)
+    }
+    .btn.ghost:hover{color:var(--text);background:rgba(255,255,255,.05)}
+    .right-actions{display:flex;gap:10px;align-items:center}
+    .pill{
+      display:none;
+      padding:9px 12px;border-radius:999px;
       border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+      font-weight:700;
+      gap:8px;align-items:center;
+    }
+    .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 4px rgba(52,211,153,.15)}
+    /* Layout */
+    .hero{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:18px;
+      align-items:stretch;
+    }
+    @media (max-width: 980px){
+      .hero{grid-template-columns:1fr}
+      .brand .name span{display:none}
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(16,24,38,.92), rgba(10,14,22,.92));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:var(--radius);
       box-shadow:var(--shadow);
       overflow:hidden;
-      position:relative;
     }
-    .kicker{
-      display:inline-flex; gap:10px; align-items:center;
-      padding:7px 12px;
-      border-radius:999px;
-      background:rgba(204,0,0,.18);
-      border:1px solid rgba(204,0,0,.28);
-      color:rgba(255,255,255,.9);
-      font-weight:650;
-      font-size:13px;
-    }
-    .dot{width:8px; height:8px; border-radius:50%; background:var(--good)}
-
-    h1{margin:12px 0 8px; font-size:38px; line-height:1.05; letter-spacing:-.6px}
-    h2{margin:0; font-size:22px; letter-spacing:-.2px}
-    .sub{color:var(--muted); font-size:16px; max-width:74ch}
-
-    .section{margin-top:18px; scroll-margin-top:92px;}
-    .sectionHead{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin:0 0 14px}
-    .sectionHead p{margin:0; color:var(--muted); font-size:14px}
-
-    .grid3{display:grid; grid-template-columns:repeat(3, 1fr); gap:14px}
-    .grid2{display:grid; grid-template-columns:repeat(2, 1fr); gap:14px}
-
-    .card{
-      border-radius:var(--radius);
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow:0 10px 28px rgba(0,0,0,.28);
-      padding:18px;
-      overflow:hidden;
-    }
-    .card h3{margin:0 0 6px; font-size:16px}
-    .card p{margin:0; color:var(--muted); font-size:14px}
-
-    .tag{
-      display:inline-flex; gap:8px; align-items:center;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:12px;
-      color:rgba(255,255,255,.84);
-      background:rgba(34,197,94,.14);
-      border:1px solid rgba(34,197,94,.22);
-      margin-bottom:10px;
-      white-space:nowrap;
-    }
-
-    /* Budget UI */
-    .appWrap{display:grid; grid-template-columns:1fr; gap:14px}
-    .appHeader{display:flex; gap:12px; flex-wrap:wrap; justify-content:space-between; align-items:flex-start}
-    .inputs{display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:10px}
-    .field{display:flex; flex-direction:column; gap:6px}
-    label{font-size:12px; color:var(--muted2)}
-    input, select{
-      border-radius:12px;
-      padding:10px 12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(10,16,28,.55);
-      color:var(--text);
-      outline:none;
-    }
-    input:focus, select:focus{border-color:rgba(204,0,0,.55); box-shadow:0 0 0 3px rgba(204,0,0,.18)}
-
-    .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
-    .chip{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.05);
-      color:rgba(255,255,255,.86);
-      font-size:13px;
-      cursor:pointer;
-      user-select:none;
-    }
-    .chip:hover{background:rgba(255,255,255,.08)}
-
-    .appMain{display:grid; grid-template-columns:1.05fr .95fr; gap:14px; align-items:stretch}
-
-    .tableWrap{overflow:auto; border-radius:var(--radius); border:1px solid rgba(255,255,255,.12)}
-    table{width:100%; border-collapse:collapse; font-size:14px}
-    th, td{padding:12px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,.08)}
-    th{color:rgba(255,255,255,.82); font-size:12px; text-transform:uppercase; letter-spacing:.08em; background:rgba(255,255,255,.04)}
-    td{color:rgba(255,255,255,.88)}
-    .tdMuted{color:var(--muted)}
-    .money{font-variant-numeric:tabular-nums}
-
-    .miniGrid{display:grid; grid-template-columns:repeat(2, 1fr); gap:10px}
-    .stat{padding:14px; border-radius:var(--radius); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12)}
-    .stat .k{color:var(--muted2); font-size:12px}
-    .stat .v{font-size:22px; font-weight:780; margin-top:4px; letter-spacing:-.2px}
-
-    .barList{display:flex; flex-direction:column; gap:10px; margin-top:10px}
-    .barRow{display:flex; align-items:center; justify-content:space-between; gap:10px}
-    .barRow .name{color:rgba(255,255,255,.84); font-size:13px}
-    .barRow .pct{color:var(--muted); font-size:12px}
-    .bar{height:10px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.10); overflow:hidden; margin-top:6px}
-    .bar > i{display:block; height:100%; width:40%; border-radius:999px; background:linear-gradient(90deg, rgba(34,197,94,.9), rgba(204,0,0,.9))}
-
-    .danger{color:rgba(239,68,68,.95)}
-    .success{color:rgba(34,197,94,.95)}
-
-    footer{margin-top:24px; color:var(--muted2); font-size:13px}
-    .footRow{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; padding-top:16px; border-top:1px solid rgba(255,255,255,.08)}
-
-    /* Login modal */
-    #loginModal, #confirmModal{
-      position:fixed; inset:0; display:none;
-      align-items:center; justify-content:center;
-      padding:18px; background:rgba(0,0,0,.55);
-      backdrop-filter:blur(8px);
-      z-index:60;
-    }
-
-    /* Toasts */
-    #toasts{
-      position:fixed;
-      right:16px;
-      bottom:16px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      z-index:80;
-      width:min(380px, calc(100vw - 32px));
-      pointer-events:none;
-    }
-    .toast{
-      pointer-events:auto;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.14);
-      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      box-shadow:0 18px 60px rgba(0,0,0,.40);
-      padding:12px 12px;
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-    }
-    .toast .icon{
-      width:34px; height:34px; border-radius:12px;
-      display:flex; align-items:center; justify-content:center;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.06);
-      flex:0 0 auto;
-    }
-    .toast .tTitle{font-weight:820; margin:0; font-size:14px}
-    .toast .tBody{margin:2px 0 0; color:var(--muted); font-size:13px}
-    .toast .x{
-      margin-left:auto;
-      flex:0 0 auto;
-      border:none;
-      background:transparent;
-      color:rgba(255,255,255,.8);
-      cursor:pointer;
-      padding:6px 8px;
-      border-radius:10px;
-    }
-    .toast .x:hover{background:rgba(255,255,255,.06)}
-    .toast.good .icon{border-color:rgba(34,197,94,.22); background:rgba(34,197,94,.14)}
-    .toast.warn .icon{border-color:rgba(245,158,11,.22); background:rgba(245,158,11,.14)}
-    .toast.bad  .icon{border-color:rgba(239,68,68,.22); background:rgba(239,68,68,.14)}
-    .toast.info .icon{border-color:rgba(59,130,246,.22); background:rgba(59,130,246,.14)}
-
-    /* "App pages" shown after login via hash routes */
-    .page{display:none}
-    .page.active{display:block}
-
-    /* Easy statement upload (drag & drop) */
-    .drop{
-      border:1px dashed rgba(255,255,255,.22);
-      border-radius:var(--radius);
-      padding:14px;
-      background:rgba(10,16,28,.35);
-      display:flex; flex-direction:column; gap:10px;
-    }
-    .dropArea{
-      border-radius:var(--radius);
+    .card .hd{padding:16px 16px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .card .hd h2,.card .hd h3{margin:0;font-size:16px;letter-spacing:.2px}
+    .card .hd p{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
+    .card .bd{padding:16px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .grid3{display:grid;grid-template-columns:repeat(3, 1fr);gap:14px}
+    @media (max-width: 820px){ .grid2,.grid3{grid-template-columns:1fr} }
+    .kpi{
+      padding:14px;border-radius:16px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(255,255,255,.04);
-      padding:14px;
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; flex-wrap:wrap;
-      cursor:pointer;
     }
-    .dropArea.drag{border-color:rgba(204,0,0,.35); box-shadow:0 0 0 3px rgba(204,0,0,.14)}
-    .dropPreview{display:none; margin-top:10px}
-    .dropPreview img{max-width:100%; border-radius:14px; border:1px solid rgba(255,255,255,.12)}
-
-    /* Pagination */
-    .pager{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-top:14px;
-    }
-    .pager .pages{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
+    .kpi .label{color:var(--muted);font-weight:700;font-size:12px}
+    .kpi .value{font-size:22px;font-weight:900;margin-top:6px}
+    .kpi .sub{margin-top:6px;color:var(--muted2);font-size:12.5px}
+    .tag{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:7px 10px;border-radius:999px;
       border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.05);
-      color:rgba(255,255,255,.86);
-      font-size:13px;
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-weight:800;
+      font-size:12px;
     }
-    .pill strong{font-weight:820}
-    .pageBtn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width:36px;
-      padding:8px 10px;
+    .tag.red{border-color:rgba(204,0,0,.35);background:rgba(204,0,0,.10);color:rgba(255,255,255,.85)}
+    .tag.green{border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.10)}
+    .tag.gray{border-color:rgba(255,255,255,.14)}
+    .muted{color:var(--muted)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .spacer{height:16px}
+    /* Forms */
+    label{display:block;font-size:12px;color:var(--muted);font-weight:800;margin:0 0 6px}
+    input, select, textarea{
+      width:100%;
       border-radius:12px;
       border:1px solid rgba(255,255,255,.14);
+      background:rgba(6,8,12,.55);
+      color:var(--text);
+      padding:11px 12px;
+      outline:none;
+      transition:.15s ease;
+      font: inherit;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color:rgba(204,0,0,.35);
+      box-shadow:var(--ring);
+    }
+    .field{margin-bottom:12px}
+    .form-row{display:grid;grid-template-columns: 1.15fr .85fr .85fr;gap:12px}
+    @media (max-width: 820px){ .form-row{grid-template-columns:1fr} }
+    .divider{height:1px;background:rgba(255,255,255,.08);margin:14px 0}
+    /* Tables / lists */
+    .list{display:flex;flex-direction:column;gap:10px}
+    .item{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      border-radius:16px;
+      padding:12px;
+      display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
+    }
+    .item .left{min-width:0}
+    .item .title{font-weight:900}
+    .item .meta{margin-top:4px;font-size:12.5px;color:var(--muted)}
+    .item .right{text-align:right}
+    .money{font-weight:900}
+    .money.good{color:var(--good)}
+    .money.bad{color:var(--bad)}
+    .mini{font-size:12px;color:var(--muted2)}
+    .iconbtn{
+      border:1px solid rgba(255,255,255,.14);
       background:rgba(255,255,255,.05);
+      color:var(--text);
+      border-radius:12px;
+      padding:9px 10px;
       cursor:pointer;
-      color:rgba(255,255,255,.88);
-      font-weight:760;
+      font-weight:900;
+      transition:.16s ease;
     }
-    .pageBtn:hover{background:rgba(255,255,255,.08)}
-    .pageBtn.active{
-      border-color:rgba(204,0,0,.40);
-      background:rgba(204,0,0,.18);
+    .iconbtn:hover{transform:translateY(-1px);background:rgba(255,255,255,.08)}
+    /* Dropzone */
+    .drop{
+      border:1.5px dashed rgba(255,255,255,.18);
+      background:rgba(255,255,255,.03);
+      border-radius:16px;
+      padding:16px;
+      display:flex;gap:12px;align-items:flex-start;justify-content:space-between;
     }
-
-    @media (max-width: 980px){
-      h1{font-size:34px}
-      .appMain{grid-template-columns:1fr}
-      .inputs{grid-template-columns:repeat(2, 1fr)}
-      .grid2{grid-template-columns:1fr}
+    .drop.drag{border-color:rgba(204,0,0,.45);background:rgba(204,0,0,.06)}
+    .drop small{color:var(--muted2)}
+    .drop .left{max-width:70%}
+    @media (max-width:820px){.drop{flex-direction:column}.drop .left{max-width:100%}}
+    /* Events */
+    .event{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      border-radius:16px;
+      padding:12px;
+      display:flex;gap:12px;align-items:flex-start;justify-content:space-between;
     }
-    @media (max-width: 560px){
-      .inputs{grid-template-columns:1fr}
-      .navlinks{display:none}
+    .event .date{
+      flex:0 0 94px;
+      border-radius:14px;
+      border:1px solid rgba(204,0,0,.25);
+      background:rgba(204,0,0,.10);
+      padding:10px 10px;
+      text-align:center;
+      font-weight:900;
+      letter-spacing:.2px;
     }
-
-    button:disabled{opacity:.55; cursor:not-allowed}
-    input:disabled, select:disabled{opacity:.55; cursor:not-allowed}
+    .event .date .dow{font-size:12px;color:rgba(255,255,255,.85)}
+    .event .date .md{margin-top:2px;font-size:14px}
+    .event .main{min-width:0}
+    .event .main .t{font-weight:950}
+    .event .main .m{margin-top:4px;color:var(--muted);font-size:12.5px;line-height:1.35}
+    .event .side{text-align:right;flex:0 0 130px}
+    .event .side .cost{font-weight:950}
+    .event .side a{display:inline-flex;margin-top:8px;text-decoration:none}
+    @media (max-width:820px){
+      .event{flex-direction:column}
+      .event .side{flex:1 1 auto;text-align:left}
+      .event .date{flex:0 0 auto;width:fit-content}
+    }
+    /* Modal */
+    .overlay{
+      position:fixed;inset:0;z-index:100;
+      background:rgba(0,0,0,.55);
+      display:none;align-items:center;justify-content:center;
+      padding:18px;
+    }
+    .overlay.show{display:flex}
+    .modal{
+      width:min(520px, 100%);
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg, rgba(16,24,38,.98), rgba(8,10,14,.98));
+      box-shadow:0 30px 60px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+    .modal .top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .modal .top b{font-size:14px;letter-spacing:.2px}
+    .modal .top button{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:18px;padding:6px 10px;border-radius:10px}
+    .modal .top button:hover{background:rgba(255,255,255,.06);color:var(--text)}
+    .modal .content{padding:16px}
+    .hint{font-size:12.5px;color:var(--muted);line-height:1.35}
+    /* Toast */
+    .toasts{position:fixed;right:16px;bottom:16px;z-index:120;display:flex;flex-direction:column;gap:10px;max-width:min(420px, calc(100vw - 32px))}
+    .toast{
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(16,24,38,.92);
+      box-shadow:0 16px 40px rgba(0,0,0,.45);
+      padding:12px 12px;
+      display:flex;gap:10px;align-items:flex-start;
+      animation: pop .18s ease-out;
+    }
+    @keyframes pop{from{transform:translateY(8px);opacity:.0}to{transform:translateY(0);opacity:1}}
+    .toast .badge{width:10px;height:10px;border-radius:50%;margin-top:4px}
+    .toast .badge.good{background:var(--good);box-shadow:0 0 0 4px rgba(52,211,153,.15)}
+    .toast .badge.warn{background:var(--warn);box-shadow:0 0 0 4px rgba(245,158,11,.16)}
+    .toast .badge.bad{background:var(--bad);box-shadow:0 0 0 4px rgba(251,113,133,.16)}
+    .toast b{display:block;font-size:13px}
+    .toast span{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.35}
+    /* Footer */
+    .foot{color:var(--muted2);font-size:12px;margin-top:16px}
+    .hide{display:none !important}
   </style>
 </head>
-
 <body>
-  <header>
-    <div class="container">
-      <div class="nav">
-        <div class="brand">
-          <div class="logo" aria-hidden="true"></div>
-          <div>SpendingScout</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#home" id="brandLink" aria-label="SpendingScout Home">
+        <!-- Inline SVG logo (wolf + magnifying glass). Scales cleanly. -->
+        <svg viewBox="0 0 64 64" role="img" aria-label="SpendingScout logo">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#cc0000"/>
+              <stop offset="1" stop-color="#7a0000"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#39d98a"/>
+              <stop offset="1" stop-color="#22c55e"/>
+            </linearGradient>
+          </defs>
+          <!-- Shield -->
+          <path d="M32 4c9 5 18 6 24 8v18c0 17-10 27-24 30C18 57 8 47 8 30V12c6-2 15-3 24-8z" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+          <!-- Wolf head (stylized) -->
+          <path d="M20 24l7-8 5 6 5-6 7 8-4 14-8 6-8-6-4-14z" fill="url(#g1)" opacity=".95"/>
+          <path d="M24.5 28.5l2.5-3 5 3 5-3 2.5 3-3 9-6.5 4-6.5-4-3-9z" fill="rgba(0,0,0,.28)"/>
+          <circle cx="27.5" cy="30.5" r="1.2" fill="rgba(255,255,255,.9)"/>
+          <circle cx="36.5" cy="30.5" r="1.2" fill="rgba(255,255,255,.9)"/>
+          <!-- Magnifying glass -->
+          <circle cx="44.5" cy="42" r="7.2" fill="rgba(6,8,12,.55)" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+          <circle cx="44.5" cy="42" r="5.5" fill="url(#g2)" opacity=".95"/>
+          <path d="M50 47.5l7 7" stroke="rgba(255,255,255,.85)" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <div class="name">
+          <b>SpendingScout</b>
+          <span>NCSU budgeting + affordable events</span>
         </div>
+      </a>
 
-        <!-- Keep original demo nav mostly the same -->
-        <nav class="navlinks" aria-label="Navigation">
-          <a href="#home">Home</a>
-          <a href="#budget">Budgeting</a>
-          <a href="#events">Events</a>
-          <a href="#how">How it works</a>
-          <a href="#about">About</a>
+      <nav class="navlinks" aria-label="Primary navigation">
+        <button class="tab" data-route="dashboard" id="tabDashboard">Dashboard</button>
+        <button class="tab" data-route="budget" id="tabBudget">Budget</button>
+        <button class="tab" data-route="events" id="tabEvents">Events</button>
+      </nav>
 
-          <!-- App-mode links (only show after login) -->
-          <a href="#/dashboard" data-mode="app">Dashboard</a>
-          <a href="#/app-events" data-mode="app">All Events</a>
-          <a href="#/app-budget" data-mode="app">Budget Only</a>
-        </nav>
-
-        <div style="display:flex; gap:10px; align-items:center;">
-          <span class="tag" id="authPill" style="margin:0; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">Preview</span>
-          <button class="btn" id="openSignupTop" type="button">Sign up</button>
-          <button class="btn primary" id="openLoginTop" type="button">Log in</button>
-        </div>
+      <div class="right-actions">
+        <div class="pill" id="userPill" title="Logged in status"><span class="dot"></span><span id="userName">Logged in</span></div>
+        <button class="btn ghost" id="btnLogin">Login</button>
+        <button class="btn primary" id="btnSignup">Sign Up</button>
+        <button class="btn" id="btnLogout">Logout</button>
       </div>
     </div>
   </header>
 
-  <!-- Toast container -->
-  <div id="toasts" aria-live="polite" aria-atomic="true"></div>
-
-  <main>
-    <div class="container">
-
-      <!-- APP PAGES -->
-      <section class="page" id="page-dashboard">
-        <div class="heroCard section" style="margin-top:16px;">
-          <div class="kicker"><span class="dot" aria-hidden="true"></span> Your Wolfpack dashboard</div>
-          <h1 id="dashTitle">Welcome back.</h1>
-          <p class="sub">Personalized view after login: your totals + saved events snapshot.</p>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
-            <a class="btn" href="#/app-budget">Go to Budget Only</a>
-            <a class="btn" href="#/app-events">Go to All Events</a>
-            <a class="btn" href="#home">Back to Demo Home</a>
-          </div>
-        </div>
-
-        <section class="section">
-          <div class="grid2">
-            <div class="card">
-              <div class="tag">Budget snapshot</div>
-              <div class="miniGrid">
-                <div class="stat"><div class="k">Income</div><div class="v money" id="dashIncome">$0.00</div></div>
-                <div class="stat"><div class="k">Expenses</div><div class="v money" id="dashExpenses">$0.00</div></div>
-                <div class="stat"><div class="k">Net</div><div class="v money" id="dashNet">$0.00</div></div>
-                <div class="stat"><div class="k">Top category</div><div class="v" id="dashTopCat">—</div></div>
-              </div>
-              <div style="height:10px"></div>
-              <div class="card" style="background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.10);">
-                <h3 style="margin:0 0 6px; font-size:14px;">Category breakdown</h3>
-                <div id="dashBars" class="barList"></div>
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="tag" style="background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22)">Saved events</div>
-              <h3 style="margin:0 0 6px; font-size:16px;">Your saved list</h3>
-              <p style="margin:0; color:var(--muted); font-size:14px;">Save events and they appear here (on this device).</p>
-              <div style="height:12px"></div>
-              <div id="savedEventsDash" style="display:flex; flex-direction:column; gap:10px;"></div>
-            </div>
-          </div>
-        </section>
-      </section>
-
-      <section class="page" id="page-app-events">
-        <div class="sectionHead" style="margin-top:16px;">
-          <div>
-            <h2>All Events (logged in)</h2>
-            <p>50 example listings with sorting + pagination (swap with real feeds later).</p>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <a class="btn" href="#/dashboard">Dashboard</a>
-            <a class="btn" href="#/app-budget">Budget Only</a>
-            <a class="btn" href="#events">Back to Demo Events</a>
-          </div>
-        </div>
-
-        <div class="grid2" style="margin-bottom:14px;">
-          <div class="card">
-            <div class="tag" style="background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22)">Raleigh + NCSU</div>
-            <h3 style="margin:0 0 6px;">Filters + Sort</h3>
-            <p style="margin:0; color:var(--muted); font-size:14px;">Organize by <b>Date</b> or <b>Recommended</b> (free + campus + soon).</p>
-            <div style="height:10px"></div>
-
-            <div class="grid2" style="gap:10px;">
-              <div class="field">
-                <label for="activityFilterApp">Area</label>
-                <select id="activityFilterApp" aria-label="Activity filter">
-                  <option value="all" selected>Campus + Triangle</option>
-                  <option value="campus">Campus only</option>
-                  <option value="triangle">Triangle only</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="sortApp">Sort</label>
-                <select id="sortApp" aria-label="Sort">
-                  <option value="recommended" selected>Recommended</option>
-                  <option value="date">Date (soonest)</option>
-                </select>
-              </div>
-            </div>
-
-            <div style="height:10px"></div>
-            <div class="grid2" style="gap:10px;">
-              <div class="field">
-                <label for="pageSizeApp">Per page</label>
-                <select id="pageSizeApp" aria-label="Page size">
-                  <option value="9" selected>9</option>
-                  <option value="12">12</option>
-                  <option value="18">18</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="searchApp">Search</label>
-                <input id="searchApp" placeholder="Search title, location..." />
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="tag">Your saved events</div>
-            <div id="savedEventsApp" style="display:flex; flex-direction:column; gap:10px;"></div>
-          </div>
-        </div>
-
+  <main class="wrap">
+    <!-- NOT LOGGED IN: Home -->
+    <section id="pageHome">
+      <div class="hero">
         <div class="card">
-          <div class="grid3" id="activityCardsApp"></div>
-
-          <div class="pager">
-            <div class="pill" id="resultsMeta">Showing <strong>0</strong> results</div>
-            <div class="pages" id="pagerBtns"></div>
+          <div class="hd">
+            <h2>Stay on budget. Still do fun stuff.</h2>
+            <p>SpendingScout helps NC State students track spending and spot events they can actually afford — fast, clean, and simple.</p>
           </div>
-        </div>
-      </section>
-
-      <section class="page" id="page-app-budget">
-        <div class="sectionHead" style="margin-top:16px;">
-          <div>
-            <h2>Budget Only (logged in)</h2>
-            <p>This is the “real app” budgeting-only view (same module as the demo below).</p>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <a class="btn" href="#/dashboard">Dashboard</a>
-            <a class="btn" href="#/app-events">All Events</a>
-            <a class="btn" href="#budget">Back to Demo Budget</a>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="tag">Tip</div>
-          <h3 style="margin:0 0 6px;">You’re viewing the budgeting-only page</h3>
-          <p style="margin:0; color:var(--muted);">Use this page in your presentation so the demo Home stays clean.</p>
-          <div style="height:12px"></div>
-          <a class="btn primary" href="#budget">Open the Budget module</a>
-        </div>
-      </section>
-
-      <!-- DEMO HOME (kept) -->
-      <section class="heroCard section" id="home" style="margin-top:16px;">
-        <div class="kicker"><span class="dot" aria-hidden="true"></span> Built for NC State students</div>
-        <h1>Know your budget.<br/>Find things to do that fit it.</h1>
-        <p class="sub">Scroll to try the live demos below. Create an account to unlock Dashboard + separate Budget and Events pages.</p>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
-          <span class="tag">Live demos below ↓</span>
-          <a class="btn" href="#/dashboard" id="goDashBtn" style="display:none;">Go to Dashboard</a>
-        </div>
-      </section>
-
-      <section class="section" id="overview">
-        <div class="grid2">
-          <div class="card">
-            <div class="tag">Budget demo</div>
-            <h3>Interactive budgeting</h3>
-            <p>Add income and expenses, then see totals and category breakdown instantly.</p>
-            <div style="height:12px"></div>
-            <a class="btn" href="#budget" style="width:fit-content;">Scroll to budgeting ↓</a>
-          </div>
-          <div class="card">
-            <div class="tag" style="background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22)">Events demo</div>
-            <h3>Interactive events</h3>
-            <p>Filter three example events. (The full 50-event list is on the All Events page.)</p>
-            <div style="height:12px"></div>
-            <a class="btn" href="#events" style="width:fit-content;">Scroll to events ↓</a>
-          </div>
-        </div>
-      </section>
-
-      <section class="section" id="budget">
-        <div class="sectionHead">
-          <div>
-            <h2>Budgeting demo</h2>
-            <p>Preview starts with common student expenses. Log in to keep your own budget.</p>
-            <p style="margin:6px 0 0; color:var(--muted2); font-size:12px;">Preview is interactive, but limited (add up to <b>3</b> custom transactions). Create an account for unlimited entries and persistent saving.</p>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn" id="seedBtn" type="button">Load student example</button>
-            <button class="btn" id="resetBtn" type="button">Reset</button>
-            <button class="btn primary" id="syncBtn" type="button" title="Requires login">Sync</button>
-          </div>
-        </div>
-
-        <div class="card appWrap">
-          <div class="appHeader">
-            <div class="left">
-              <h3 style="margin:0 0 6px; font-size:18px;">Budget Tracker</h3>
-              <p style="margin:0; color:var(--muted); font-size:14px;">Use the form below to add <b>Income</b> or <b>Expenses</b>.</p>
-            </div>
-            <div class="right" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-              <div class="tag" id="saveStatus" style="margin:0; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">Preview data</div>
-              <button class="btn primary" id="addBtn" type="button">Add</button>
-            </div>
-          </div>
-
-          <div class="inputs" aria-label="Transaction inputs">
-            <div class="field">
-              <label for="type">Type</label>
-              <select id="type">
-                <option value="expense" selected>Expense</option>
-                <option value="income">Income</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="category">Category</label>
-              <select id="category">
-                <option>Food</option>
-                <option>Transportation</option>
-                <option>Subscriptions</option>
-                <option>School</option>
-                <option>Essentials</option>
-                <option>Entertainment</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="amount">Amount</label>
-              <input id="amount" inputmode="decimal" placeholder="Amount (ex: 12.50)" />
-            </div>
-            <div class="field">
-              <label for="note">Description</label>
-              <input id="note" placeholder="Description (ex: Target groceries)" />
-            </div>
-          </div>
-
-          <div class="chips" aria-label="Quick add examples">
-            <div class="chip" data-chip='{"type":"expense","category":"Food","amount":"12.50","note":"Coffee / snack"}'>☕ Coffee $12.50</div>
-            <div class="chip" data-chip='{"type":"expense","category":"Food","amount":"18.75","note":"Dining hall / takeout"}'>🍔 Food $18.75</div>
-            <div class="chip" data-chip='{"type":"expense","category":"Transportation","amount":"32.70","note":"Gas"}'>⛽ Gas $32.70</div>
-            <div class="chip" data-chip='{"type":"expense","category":"Subscriptions","amount":"11.99","note":"Spotify"}'>🎵 Spotify $11.99</div>
-            <div class="chip" data-chip='{"type":"expense","category":"School","amount":"27.50","note":"Supplies"}'>📚 Supplies $27.50</div>
-            <div class="chip" data-chip='{"type":"income","category":"Other","amount":"260.00","note":"Paycheck"}'>💰 Income $260</div>
-          </div>
-
-          <div style="height:12px"></div>
-
-          <div class="card" style="background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.10);">
-            <div class="sectionHead" style="margin:0;">
-              <div>
-                <h3 style="margin:0; font-size:16px;">Statement scan (demo)</h3>
-                <p style="margin:4px 0 0; color:var(--muted); font-size:13px;">Drag & drop a screenshot/photo below (or click). Sign in to enable uploads + prefill.</p>
+          <div class="bd">
+            <div class="row" style="justify-content:space-between">
+              <div class="row">
+                <span class="tag red">NCSU-themed</span>
+                <span class="tag">Demo mode (no account needed)</span>
               </div>
-              <button class="btn primary" id="extractBtn" type="button">Prefill from image</button>
+              <div class="row">
+                <button class="btn ghost" id="btnHomeLogin">Login</button>
+                <button class="btn primary" id="btnHomeSignup">Sign Up</button>
+              </div>
             </div>
 
-            <div style="height:10px"></div>
+            <div class="spacer"></div>
 
             <div class="grid2">
-              <div>
-                <div class="drop">
-                  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-                    <div>
-                      <div style="font-weight:700;">Upload statement image <span class="tag" style="margin:0 0 0 8px; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">Requires login</span></div>
-                      <div style="color:var(--muted2); font-size:12px;">PNG/JPG • stored locally</div>
-                    </div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                      <input id="stmtFile" type="file" accept="image/*" style="display:none;" />
-                      <button class="btn" id="chooseFileBtn" type="button">Choose file</button>
-                      <button class="btn" id="clearFileBtn" type="button">Clear</button>
-                    </div>
-                  </div>
-
-                  <div class="dropArea" id="dropArea" style="margin-top:10px;" role="button" tabindex="0" aria-label="Drop statement image here or click to choose a file">
-                    <div>
-                      <div style="font-weight:750;">Drop screenshot here</div>
-                      <div style="color:var(--muted2); font-size:12px;">or click to choose</div>
-                    </div>
-                    <span class="tag" id="uploadStatus" style="margin:0; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12);">No file selected</span>
-                  </div>
-
-                  <div id="stmtPreview" class="dropPreview"></div>
-                </div>
+              <div class="kpi">
+                <div class="label">Example monthly spend</div>
+                <div class="value">$612</div>
+                <div class="sub">Food · Gas · Subscriptions · Campus</div>
               </div>
+              <div class="kpi">
+                <div class="label">Example budget left</div>
+                <div class="value"><span style="color:var(--good)">$188</span></div>
+                <div class="sub">Enough for free events + 1–2 ticketed nights</div>
+              </div>
+            </div>
 
-              <div>
-                <div class="tag" style="background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22);">Example “scan”</div>
-                <div style="border-radius:var(--radius); overflow:hidden; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04);">
-                  <div style="padding:12px; border-bottom:1px solid rgba(255,255,255,.08); font-size:12px; color:rgba(255,255,255,.82); text-transform:uppercase; letter-spacing:.08em;">Statement line item</div>
-                  <div style="padding:14px; color:rgba(255,255,255,.84); font-size:13px;">
-                    <div style="display:flex; justify-content:space-between; gap:10px;"><span>02/07 • TARGET T-1234</span><span class="money">-$44.18</span></div>
-                    <div style="color:var(--muted2); margin-top:6px;">Click “Prefill from image” → fills Amount/Category/Description</div>
+            <div class="divider"></div>
+
+            <!-- Demo Budgeting Section -->
+            <div>
+              <div class="row" style="justify-content:space-between;align-items:flex-end">
+                <div>
+                  <h3 style="margin:0 0 6px">Demo Budgeting</h3>
+                  <div class="muted" style="font-size:13px;line-height:1.35">
+                    Preview categorized spending and a quick breakdown chart.
                   </div>
                 </div>
-                <div style="height:10px"></div>
-                <p style="margin:0; color:var(--muted2); font-size:12px;">Future version: secure OCR + category rules (with permission) to auto-import spending.</p>
+                <span class="tag gray">Preview</span>
               </div>
-            </div>
-          </div>
 
-          <div class="appMain">
-            <div class="card" style="padding:0;">
-              <div class="tableWrap" role="region" aria-label="Transactions table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Type</th>
-                      <th>Category</th>
-                      <th>Description</th>
-                      <th class="money">Amount</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody id="rows"></tbody>
-                </table>
+              <div class="spacer"></div>
+
+              <div class="grid2">
+                <div class="card" style="box-shadow:none;background:rgba(255,255,255,.03)">
+                  <div class="bd">
+                    <canvas id="demoChart" width="520" height="260" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18)"></canvas>
+                    <div class="foot">Demo chart uses sample expenses — log in to track your own.</div>
+                  </div>
+                </div>
+                <div>
+                  <div class="list" id="demoExpenses"></div>
+                </div>
               </div>
             </div>
 
-            <div class="card">
-              <h3 style="margin:0 0 6px; font-size:16px;">Summary</h3>
-              <p style="margin:0; color:var(--muted); font-size:14px;">Income, expenses, net, and top category.</p>
+            <div class="divider"></div>
 
-              <div style="height:10px"></div>
-              <div class="miniGrid">
-                <div class="stat"><div class="k">Income</div><div class="v money" id="income">$0.00</div></div>
-                <div class="stat"><div class="k">Expenses</div><div class="v money" id="expenses">$0.00</div></div>
-                <div class="stat"><div class="k">Net</div><div class="v money" id="net">$0.00</div></div>
-                <div class="stat"><div class="k">Top category</div><div class="v" id="topCat">—</div></div>
+            <!-- Demo Events Section -->
+            <div>
+              <div class="row" style="justify-content:space-between;align-items:flex-end">
+                <div>
+                  <h3 style="margin:0 0 6px">Demo Events</h3>
+                  <div class="muted" style="font-size:13px;line-height:1.35">
+                    Exactly 3 example events to show how recommendations look.
+                  </div>
+                </div>
+                <span class="tag gray">Preview</span>
               </div>
+              <div class="spacer"></div>
+              <div class="list" id="demoEvents"></div>
+            </div>
 
-              <div style="height:10px"></div>
-              <div class="card" style="background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.10);">
-                <h3 style="margin:0 0 6px; font-size:14px;">Category breakdown</h3>
-                <div id="bars" class="barList"></div>
+            <div class="divider"></div>
+
+            <!-- Feedback -->
+            <div class="card" style="box-shadow:none;background:rgba(255,255,255,.03)">
+              <div class="bd" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+                <div>
+                  <b style="display:block">Help us improve SpendingScout</b>
+                  <div class="muted" style="font-size:13px;margin-top:4px">Quick feedback form (opens in a new tab).</div>
+                </div>
+                <a class="btn primary" id="feedbackLinkHome" target="_blank" rel="noopener">Open Feedback Form</a>
               </div>
             </div>
+
           </div>
         </div>
-      </section>
 
-      <!-- DEMO EVENTS: MUST STAY 3 EXAMPLE EVENTS -->
-      <section class="section" id="events">
-        <div class="sectionHead">
-          <div>
-            <h2>Events demo</h2>
-            <p><b>Exactly 3</b> example events (demo). The 50-event list is on <b>All Events</b> after login.</p>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-            <div class="tag" style="margin:0; background:rgba(59,130,246,.16); border-color:rgba(59,130,246,.22)">Raleigh + NCSU</div>
-            <select id="activityFilter" aria-label="Activity filter" style="min-width:190px;">
-              <option value="all" selected>Campus + Triangle</option>
-              <option value="campus">Campus only</option>
-              <option value="triangle">Triangle only</option>
-            </select>
-          </div>
-        </div>
         <div class="card">
-          <div class="grid3" id="activityCards"></div>
-        </div>
-      </section>
+          <div class="hd">
+            <h3>What you get after login</h3>
+            <p>Dashboard + Budget + Events with smooth navigation. No pop-ups or browser alerts.</p>
+          </div>
+          <div class="bd">
+            <div class="list">
+              <div class="item">
+                <div class="left">
+                  <div class="title">Dashboard</div>
+                  <div class="meta">Spending overview + affordable event suggestions</div>
+                </div>
+                <div class="right">
+                  <span class="tag green">Fast</span>
+                </div>
+              </div>
+              <div class="item">
+                <div class="left">
+                  <div class="title">Budget</div>
+                  <div class="meta">Add expenses, categories, totals, breakdown + statement image demo</div>
+                </div>
+                <div class="right">
+                  <span class="tag">Track</span>
+                </div>
+              </div>
+              <div class="item">
+                <div class="left">
+                  <div class="title">Events</div>
+                  <div class="meta">20 upcoming events with real date labels, sortable + paginated</div>
+                </div>
+                <div class="right">
+                  <span class="tag red">NCSU</span>
+                </div>
+              </div>
+            </div>
 
-      <section class="section" id="how">
-        <div class="sectionHead"><div><h2>How it works</h2><p>Simple, fast, and privacy-first.</p></div></div>
-        <div class="grid3">
-          <div class="card"><div class="tag">1</div><h3>Add spending</h3><p>Track income and expenses in seconds.</p></div>
-          <div class="card"><div class="tag">2</div><h3>See patterns</h3><p>Instant category breakdown and totals.</p></div>
-          <div class="card"><div class="tag">3</div><h3>Pick events</h3><p>Choose plans that fit your budget.</p></div>
-        </div>
-      </section>
-
-      <section class="section" id="about">
-        <div class="sectionHead"><div><h2>About</h2><p>Made for NC State — designed to expand.</p></div></div>
-        <div class="grid2">
-          <div class="card"><h3>Campus-first</h3><p>Categories and example events match student life at NC State.</p></div>
-          <div class="card"><h3>Expandable</h3><p>Next steps: real event feeds, OCR imports, and secure cloud sync.</p></div>
-        </div>
-      </section>
-
-      <footer>
-        <div class="footRow">
-          <div>© <span id="yr"></span> SpendingScout</div>
-          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-            <a class="btn" href="#home" style="padding:7px 10px; border-radius:10px;">Back to top</a>
+            <div class="divider"></div>
+            <div class="hint">
+              Demo login tip: use any email + password — this is a single-file prototype for class/demo use.
+            </div>
           </div>
         </div>
-      </footer>
+      </div>
+    </section>
 
+    <!-- LOGGED IN: Dashboard -->
+    <section id="pageDashboard" class="hide">
+      <div class="card">
+        <div class="hd">
+          <h2>Dashboard</h2>
+          <p>Quick overview of spending + suggested events based on your current budget.</p>
+        </div>
+        <div class="bd">
+          <div class="grid3" id="dashKpis"></div>
+
+          <div class="divider"></div>
+
+          <div class="grid2">
+            <div class="card" style="box-shadow:none;background:rgba(255,255,255,.03)">
+              <div class="hd">
+                <h3>Spending breakdown</h3>
+                <p>Updated from your budget entries.</p>
+              </div>
+              <div class="bd">
+                <canvas id="budgetChart" width="520" height="260" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18)"></canvas>
+                <div class="foot">Tip: Add a few expenses on the Budget page to see real totals.</div>
+              </div>
+            </div>
+
+            <div>
+              <div class="card" style="box-shadow:none;background:rgba(255,255,255,.03)">
+                <div class="hd">
+                  <h3>Suggested events</h3>
+                  <p>Based on what you can afford right now.</p>
+                </div>
+                <div class="bd">
+                  <div class="list" id="suggestedEvents"></div>
+                  <div class="spacer"></div>
+                  <button class="btn primary" id="goEvents">Browse all events</button>
+                </div>
+              </div>
+
+              <div class="spacer"></div>
+
+              <div class="card" style="box-shadow:none;background:rgba(255,255,255,.03)">
+                <div class="bd" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+                  <div>
+                    <b style="display:block">Feedback</b>
+                    <div class="muted" style="font-size:13px;margin-top:4px">Tell us what would make this more useful.</div>
+                  </div>
+                  <a class="btn" id="feedbackLinkDash" target="_blank" rel="noopener">Open Feedback Form</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGGED IN: Budget -->
+    <section id="pageBudget" class="hide">
+      <div class="card">
+        <div class="hd">
+          <h2>Budget</h2>
+          <p>Add expenses, categorize spending, view totals, and try statement image upload (demo parsing).</p>
+        </div>
+        <div class="bd">
+          <div class="card" style="box-shadow:none;background:rgba(255,255,255,.03)">
+            <div class="bd">
+              <div class="form-row">
+                <div class="field">
+                  <label for="expName">Expense</label>
+                  <input id="expName" placeholder="e.g., Talley meal, gas, coffee" />
+                </div>
+                <div class="field">
+                  <label for="expAmt">Amount</label>
+                  <input id="expAmt" inputmode="decimal" placeholder="e.g., 12.50" />
+                </div>
+                <div class="field">
+                  <label for="expCat">Category</label>
+                  <select id="expCat">
+                    <option>Food</option>
+                    <option>Gas/Transport</option>
+                    <option>Subscriptions</option>
+                    <option>School</option>
+                    <option>Entertainment</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row" style="justify-content:space-between">
+                <div class="row">
+                  <button class="btn primary" id="addExpense">Add Expense</button>
+                  <button class="btn ghost" id="clearExpenses">Clear All</button>
+                </div>
+                <div class="row">
+                  <span class="tag">Stored locally</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="grid2">
+            <div class="card" style="box-shadow:none;background:rgba(255,255,255,.03)">
+              <div class="hd">
+                <h3>Expenses</h3>
+                <p>Newest first. Remove items individually if needed.</p>
+              </div>
+              <div class="bd">
+                <div class="list" id="expenseList"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="card" style="box-shadow:none;background:rgba(255,255,255,.03)">
+                <div class="hd">
+                  <h3>Totals</h3>
+                  <p>Monthly view (demo). Adjust your budget amount below.</p>
+                </div>
+                <div class="bd">
+                  <div class="field">
+                    <label for="budgetLimit">Monthly budget limit</label>
+                    <input id="budgetLimit" inputmode="decimal" placeholder="e.g., 800" />
+                  </div>
+                  <div class="grid2">
+                    <div class="kpi">
+                      <div class="label">Spent</div>
+                      <div class="value" id="spentKpi">$0</div>
+                      <div class="sub" id="spentSub">0 expenses</div>
+                    </div>
+                    <div class="kpi">
+                      <div class="label">Remaining</div>
+                      <div class="value" id="remainKpi">$0</div>
+                      <div class="sub" id="remainSub">Budget left</div>
+                    </div>
+                  </div>
+                  <div class="spacer"></div>
+                  <canvas id="breakdownChart" width="520" height="230" style="width:100%;height:auto;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18)"></canvas>
+                </div>
+              </div>
+
+              <div class="spacer"></div>
+
+              <div class="card" style="box-shadow:none;background:rgba(255,255,255,.03)">
+                <div class="hd">
+                  <h3>Statement image upload (demo parsing)</h3>
+                  <p>Drag & drop a screenshot/picture. We’ll simulate extracting transactions.</p>
+                </div>
+                <div class="bd">
+                  <div class="drop" id="dropzone">
+                    <div class="left">
+                      <b>Drop an image here</b>
+                      <div class="muted" style="margin-top:6px;font-size:13px;line-height:1.35">
+                        Works offline. No real OCR — demo generates realistic transactions from your file name + date.
+                      </div>
+                      <small>Accepted: PNG/JPG/WebP</small>
+                    </div>
+                    <div class="row">
+                      <input id="filePick" type="file" accept="image/*" style="display:none" />
+                      <button class="btn" id="pickFile">Choose File</button>
+                      <button class="btn primary" id="parseDemo" disabled>Simulate Parse</button>
+                    </div>
+                  </div>
+                  <div class="foot" id="fileStatus">No file selected.</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGGED IN: Events -->
+    <section id="pageEvents" class="hide">
+      <div class="card">
+        <div class="hd">
+          <h2>Events</h2>
+          <p>20 upcoming events in the next few weeks. Sort by Recommended or Soonest. Paginated to stay clean.</p>
+        </div>
+        <div class="bd">
+          <div class="row" style="justify-content:space-between">
+            <div class="row">
+              <span class="tag red">NCSU + Raleigh area</span>
+              <span class="tag">20 events</span>
+            </div>
+            <div class="row">
+              <label style="margin:0;color:var(--muted);font-size:12px;font-weight:900">Sort</label>
+              <select id="sortEvents" style="width:auto;min-width:190px">
+                <option value="recommended">Recommended</option>
+                <option value="soonest">Soonest date</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="list" id="eventsList"></div>
+
+          <div class="spacer"></div>
+
+          <div class="row" style="justify-content:space-between">
+            <div class="muted" id="pageInfo" style="font-size:13px"></div>
+            <div class="row">
+              <button class="btn ghost" id="prevPage">Prev</button>
+              <button class="btn" id="nextPage">Next</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="card" style="box-shadow:none;background:rgba(255,255,255,.03)">
+            <div class="bd" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+              <div>
+                <b style="display:block">Have an event to add?</b>
+                <div class="muted" style="font-size:13px;margin-top:4px">Drop it in the feedback form.</div>
+              </div>
+              <a class="btn primary" id="feedbackLinkEvents" target="_blank" rel="noopener">Open Feedback Form</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <div class="foot">
+      Prototype note: This is a single-file SPA for demos/class use. It stores data locally in your browser (localStorage).
     </div>
   </main>
 
-  <!-- Login modal -->
-  <div id="loginModal" role="dialog" aria-modal="true" aria-label="Sign up or log in">
-    <div class="card" style="max-width:520px; width:100%;">
-      <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
-        <div>
-          <h3 style="margin:0 0 6px;">Sign up or log in</h3>
-          <p style="margin:0; color:var(--muted); font-size:14px;">This demo stores accounts locally in your browser for testing.</p>
-        </div>
-        <button class="btn small" id="closeLogin" type="button">Close</button>
+  <!-- Login Modal -->
+  <div class="overlay" id="loginOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <div class="top">
+        <b id="loginTitle">Login</b>
+        <button id="closeLogin" aria-label="Close">×</button>
       </div>
-
-      <div style="height:12px"></div>
-      <div class="grid2">
+      <div class="content">
         <div class="field">
-          <label for="email">Email</label>
-          <input id="email" placeholder="you@ncsu.edu" />
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" placeholder="name@ncsu.edu" />
         </div>
         <div class="field">
-          <label for="password">Password</label>
-          <input id="password" type="password" placeholder="••••••••" />
+          <label for="loginPass">Password</label>
+          <input id="loginPass" type="password" placeholder="••••••••" />
         </div>
-      </div>
-
-      <div style="height:12px"></div>
-      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-        <button class="btn" id="logoutBtn" type="button">Log out</button>
-        <button class="btn" id="signupBtn" type="button">Sign up</button>
-        <button class="btn primary" id="loginBtn" type="button">Log in</button>
-      </div>
-
-      <div style="height:10px"></div>
-      <p style="margin:0; color:var(--muted2); font-size:12px;">For a real product, use secure authentication + hashed passwords. This is for E101 MVP testing only.</p>
-    </div>
-  </div>
-
-  <!-- Confirm modal (theme-safe replacement for window.confirm) -->
-  <div id="confirmModal" role="dialog" aria-modal="true" aria-label="Confirm">
-    <div class="card" style="max-width:520px; width:100%;">
-      <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
-        <div>
-          <h3 style="margin:0 0 6px;" id="confirmTitle">Confirm</h3>
-          <p style="margin:0; color:var(--muted); font-size:14px;" id="confirmBody">Are you sure?</p>
+        <div class="row" style="justify-content:space-between">
+          <button class="btn ghost" id="toSignup">Need an account?</button>
+          <button class="btn primary" id="doLogin">Login</button>
         </div>
-        <button class="btn small" id="confirmClose" type="button">Close</button>
-      </div>
-      <div style="height:14px"></div>
-      <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
-        <button class="btn" id="confirmCancel" type="button">Cancel</button>
-        <button class="btn primary" id="confirmOk" type="button">Yes</button>
+        <div class="divider"></div>
+        <div class="hint">Demo: any email/password works. We keep it simple so the UI is the focus.</div>
       </div>
     </div>
   </div>
 
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const money = (n) => Number(n || 0).toLocaleString(undefined, { style: "currency", currency: "USD" });
-    const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
-    const escapeHtml = (str) => String(str || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-
-    // ---------- Themed toasts (replaces alert/white popups) ----------
-    function toast(type, title, body, ms=3200){
-      const wrap = $('toasts');
-      if(!wrap) return;
-      const t = document.createElement('div');
-      t.className = `toast ${type || 'info'}`;
-      const icon = type === 'good' ? '✓' : type === 'warn' ? '!' : type === 'bad' ? '×' : 'i';
-      t.innerHTML = `
-        <div class="icon" aria-hidden="true">${icon}</div>
-        <div>
-          <p class="tTitle">${escapeHtml(title || '')}</p>
-          <p class="tBody">${escapeHtml(body || '')}</p>
+  <!-- Signup Modal -->
+  <div class="overlay" id="signupOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="signupTitle">
+      <div class="top">
+        <b id="signupTitle">Sign Up</b>
+        <button id="closeSignup" aria-label="Close">×</button>
+      </div>
+      <div class="content">
+        <div class="field">
+          <label for="signupName">Name</label>
+          <input id="signupName" placeholder="Cameron" />
         </div>
-        <button class="x" aria-label="Close">✕</button>
-      `;
-      wrap.appendChild(t);
-      const close = () => { if(t && t.parentNode) t.parentNode.removeChild(t); };
-      t.querySelector('.x')?.addEventListener('click', close);
-      setTimeout(close, ms);
-    }
+        <div class="field">
+          <label for="signupEmail">Email</label>
+          <input id="signupEmail" placeholder="name@ncsu.edu" />
+        </div>
+        <div class="field">
+          <label for="signupPass">Password</label>
+          <input id="signupPass" type="password" placeholder="Create a password" />
+        </div>
+        <div class="row" style="justify-content:space-between">
+          <button class="btn ghost" id="toLogin">Already have an account?</button>
+          <button class="btn primary" id="doSignup">Create Account</button>
+        </div>
+        <div class="divider"></div>
+        <div class="hint">Demo sign-up stores your name locally so the dashboard feels real.</div>
+      </div>
+    </div>
+  </div>
 
-    // ---------- Themed confirm (replaces window.confirm) ----------
-    let _confirmResolve = null;
-    function confirmTheme({ title='Confirm', body='Are you sure?', okText='Yes', cancelText='Cancel' }){
-      return new Promise((resolve)=>{
-        _confirmResolve = resolve;
-        $('confirmTitle').textContent = title;
-        $('confirmBody').textContent = body;
-        $('confirmOk').textContent = okText;
-        $('confirmCancel').textContent = cancelText;
-        $('confirmModal').style.display = 'flex';
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+(() => {
+  // ===== Config =====
+  const FEEDBACK_URL = "https://forms.gle/REPLACE_WITH_YOUR_GOOGLE_FORM_LINK";
+  const STORAGE = {
+    loggedIn: "ss_logged_in",
+    userName: "ss_user_name",
+    budgetLimit: "ss_budget_limit",
+    expenses: "ss_expenses",
+    lastRoute: "ss_last_route"
+  };
+
+  // ===== Helpers =====
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const money = (n) => {
+    const x = Number(n || 0);
+    return x.toLocaleString(undefined, {style:"currency", currency:"USD"});
+  };
+  const clamp = (v,min,max) => Math.min(max, Math.max(min, v));
+  const todayLocal = () => {
+    const d = new Date();
+    d.setHours(0,0,0,0);
+    return d;
+  };
+  const fmtDateLabel = (date) => {
+    // e.g., "Sat, Mar 9"
+    const dow = date.toLocaleDateString(undefined,{weekday:"short"});
+    const mon = date.toLocaleDateString(undefined,{month:"short"});
+    const day = date.getDate();
+    return { dow, md: `${mon} ${day}` };
+  };
+  const safeText = (s) => (s ?? "").toString();
+
+  function toast(kind, title, msg){
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.innerHTML = `
+      <div class="badge ${kind}"></div>
+      <div style="min-width:0">
+        <b>${escapeHtml(title)}</b>
+        <span>${escapeHtml(msg)}</span>
+      </div>`;
+    $("#toasts").appendChild(el);
+    setTimeout(() => { el.style.opacity = "0"; el.style.transform = "translateY(6px)"; }, 3400);
+    setTimeout(() => el.remove(), 3900);
+  }
+  function escapeHtml(str){
+    return safeText(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  }
+
+  // ===== Auth state =====
+  const isLoggedIn = () => localStorage.getItem(STORAGE.loggedIn) === "true";
+  const setLoggedIn = (v) => localStorage.setItem(STORAGE.loggedIn, v ? "true" : "false");
+  const getUserName = () => localStorage.getItem(STORAGE.userName) || "Wolfpack";
+  const setUserName = (name) => localStorage.setItem(STORAGE.userName, name || "Wolfpack");
+
+  // ===== Expenses state =====
+  function loadExpenses(){
+    try{
+      return JSON.parse(localStorage.getItem(STORAGE.expenses) || "[]") || [];
+    } catch { return []; }
+  }
+  function saveExpenses(arr){
+    localStorage.setItem(STORAGE.expenses, JSON.stringify(arr || []));
+  }
+  function addExpenseObj(obj){
+    const list = loadExpenses();
+    list.unshift(obj);
+    saveExpenses(list);
+  }
+  function removeExpenseById(id){
+    const list = loadExpenses().filter(x => x.id !== id);
+    saveExpenses(list);
+  }
+  function clearExpenses(){
+    saveExpenses([]);
+  }
+
+  function getBudgetLimit(){
+    const v = Number(localStorage.getItem(STORAGE.budgetLimit));
+    return Number.isFinite(v) && v > 0 ? v : 800;
+  }
+  function setBudgetLimit(v){
+    const num = Number(v);
+    if(Number.isFinite(num) && num > 0) localStorage.setItem(STORAGE.budgetLimit, String(num));
+  }
+
+  // ===== Demo Data (Home) =====
+  const demoExpenses = [
+    {name:"Talley meal", amt: 11.24, cat:"Food"},
+    {name:"Gas", amt: 28.80, cat:"Gas/Transport"},
+    {name:"Spotify", amt: 10.99, cat:"Subscriptions"},
+    {name:"Lab supplies", amt: 14.50, cat:"School"},
+    {name:"Coffee", amt: 4.75, cat:"Food"},
+  ];
+  const demoEvents = [
+    {title:"Wellness Wednesday @ Carmichael", dateOffset: 2, loc:"Carmichael Gym", cost: "Free", link:"https://wellrec.dasa.ncsu.edu/"},
+    {title:"Talley Live: Student Showcase", dateOffset: 5, loc:"Talley Student Union", cost: "Free", link:"https://calendar.ncsu.edu/"},
+    {title:"Raleigh Night Market (student-friendly)", dateOffset: 9, loc:"Downtown Raleigh", cost: "$5–$12", link:"https://www.visitraleigh.com/"}
+  ];
+
+  // ===== Events Data (20 upcoming) =====
+  // "Next few weeks" = within 21 days of today. Dates are generated at runtime so they stay real.
+  const eventTemplates = [
+    ["Pack Fitness: Boxing Fundamentals","Carmichael Gym","Free","https://wellrec.dasa.ncsu.edu/","ncsu"],
+    ["Engineering Entrepreneurs Meetup","Hunt Library","Free","https://calendar.ncsu.edu/","ncsu"],
+    ["Talley Farmers Market Pop‑Up","Talley Student Union","Free","https://calendar.ncsu.edu/","ncsu"],
+    ["Poole College Career Fair Prep","Nelson Hall","Free","https://calendar.ncsu.edu/","ncsu"],
+    ["Packapalooza Throwback Night","Talley Ballroom","Free","https://calendar.ncsu.edu/","ncsu"],
+    ["Sunset Run Club (beginner friendly)","Pullen Park","Free","https://www.visitraleigh.com/","raleigh"],
+    ["Live Music @ Transfer Co.","Transfer Food Hall","$10","https://www.visitraleigh.com/","raleigh"],
+    ["NCSU Club Sports Expo","Stafford Commons","Free","https://getinvolved.ncsu.edu/","ncsu"],
+    ["Wolfpack Trivia Night","Witherspoon Student Center","Free","https://getinvolved.ncsu.edu/","ncsu"],
+    ["Museum Night: NC Museum of Art","NCMA","Free","https://ncartmuseum.org/","raleigh"],
+    ["Outdoor Movie on the Lawn","Talley Lawn","Free","https://calendar.ncsu.edu/","ncsu"],
+    ["Design Workshop: Resume + Portfolio","D.H. Hill Library","Free","https://calendar.ncsu.edu/","ncsu"],
+    ["Food Truck Rodeo","Downtown Raleigh","Free","https://www.visitraleigh.com/","raleigh"],
+    ["Open Mic Night","The Garage (Raleigh)","$5","https://www.visitraleigh.com/","raleigh"],
+    ["Basketball Watch Party","Talley","Free","https://getinvolved.ncsu.edu/","ncsu"],
+    ["Volunteer Day: Campus Clean‑Up","Main Campus","Free","https://getinvolved.ncsu.edu/","ncsu"],
+    ["Beginner Pickleball Social","Method Road Courts","Free","https://www.visitraleigh.com/","raleigh"],
+    ["NC State Art Club Meetup","Price Music Center","Free","https://getinvolved.ncsu.edu/","ncsu"],
+    ["STEM Study Jam","D.H. Hill Library","Free","https://calendar.ncsu.edu/","ncsu"],
+    ["Downtown Raleigh Pop‑Up Market","Moore Square","Free","https://www.visitraleigh.com/","raleigh"],
+  ];
+
+  function buildEvents(){
+    const start = todayLocal();
+    const offsets = [
+      1,2,3,4,5,6,7,8,9,10,
+      11,12,13,14,15,16,17,18,19,20
+    ]; // 20 events within ~3 weeks
+    const list = [];
+    for(let i=0;i<20;i++){
+      const t = eventTemplates[i];
+      const d = new Date(start);
+      d.setDate(d.getDate() + offsets[i]);
+      const cost = t[2];
+      // score: prioritize NCSU + free + closer dates as "recommended"
+      let score = 0;
+      if(t[4]==="ncsu") score += 30;
+      if(String(cost).toLowerCase().includes("free")) score += 25;
+      score += Math.max(0, 22 - offsets[i]); // sooner gets slightly more
+      // small deterministic wiggle
+      score += (i%3)*2;
+      list.push({
+        id: "ev_"+i,
+        title: t[0],
+        dateISO: d.toISOString(),
+        location: t[1],
+        cost: cost,
+        link: t[3],
+        source: t[4],
+        score
       });
     }
-    function closeConfirm(result){
-      $('confirmModal').style.display = 'none';
-      if(typeof _confirmResolve === 'function') _confirmResolve(!!result);
-      _confirmResolve = null;
-    }
-    $('confirmClose')?.addEventListener('click', ()=>closeConfirm(false));
-    $('confirmCancel')?.addEventListener('click', ()=>closeConfirm(false));
-    $('confirmOk')?.addEventListener('click', ()=>closeConfirm(true));
-    $('confirmModal')?.addEventListener('click', (e)=>{ if(e.target?.id==='confirmModal') closeConfirm(false); });
+    return list;
+  }
 
-    // ---------- Auth (local demo) ----------
-    const AUTH_KEY = 'spendingscout_auth_v4';
-    const USERS_KEY = 'spendingscout_users_v4';
-    const SAVED_EVENTS_KEY = 'spendingscout_saved_events_v4';
-    const PREVIEW_CUSTOM_LIMIT = 3;
+  // ===== Routing / UI state =====
+  const pages = {
+    home: $("#pageHome"),
+    dashboard: $("#pageDashboard"),
+    budget: $("#pageBudget"),
+    events: $("#pageEvents")
+  };
+  const tabs = {
+    dashboard: $("#tabDashboard"),
+    budget: $("#tabBudget"),
+    events: $("#tabEvents")
+  };
 
-    function getAuth(){ try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch { return null; } }
-    function isLoggedIn(){ return !!getAuth(); }
+  function setActiveTab(route){
+    Object.entries(tabs).forEach(([k,el]) => el.classList.toggle("active", k===route));
+  }
 
-    function budgetKey(){
-      const a = getAuth();
-      if(a?.email) return 'spendingscout_budget_user_' + a.email.toLowerCase();
-      return 'spendingscout_budget_preview_v4';
-    }
-    function savedEventsKey(){
-      const a = getAuth();
-      if(a?.email) return SAVED_EVENTS_KEY + '_' + a.email.toLowerCase();
-      return SAVED_EVENTS_KEY + '_preview';
-    }
-    function budgetStore(){ return isLoggedIn() ? localStorage : sessionStorage; }
+  function showPage(route){
+    // Guard: not logged in -> only home
+    const logged = isLoggedIn();
+    if(!logged && route !== "home") route = "home";
+    // Guard: logged in -> default dashboard (and hide home)
+    if(logged && route === "home") route = "dashboard";
 
-    function loadBudget(){
-      try {
-        const raw = budgetStore().getItem(budgetKey());
-        return raw ? (JSON.parse(raw) || []) : [];
-      } catch { return []; }
-    }
-    function saveBudget(items){
-      budgetStore().setItem(budgetKey(), JSON.stringify(items));
-      updateAuthUI();
-    }
+    Object.entries(pages).forEach(([k,el]) => el.classList.toggle("hide", k!==route));
+    setActiveTab(route);
 
-    function loadSaved(){
-      try {
-        const raw = localStorage.getItem(savedEventsKey());
-        return raw ? (JSON.parse(raw) || []) : [];
-      } catch { return []; }
-    }
-    function saveSaved(list){
-      localStorage.setItem(savedEventsKey(), JSON.stringify(list));
-      renderSaved();
-      renderDashboard();
-      updateAuthUI();
-    }
+    // Save route for refresh when logged in
+    if(logged) localStorage.setItem(STORAGE.lastRoute, route);
 
-    let items = loadBudget();
-    let saved = loadSaved();
+    // Update navbar controls visibility
+    $("#btnLogout").style.display = logged ? "inline-flex" : "none";
+    $("#btnLogin").style.display = logged ? "none" : "inline-flex";
+    $("#btnSignup").style.display = logged ? "none" : "inline-flex";
+    $("#userPill").style.display = logged ? "inline-flex" : "none";
+    $("#userName").textContent = logged ? getUserName() : "Logged out";
 
-    function countCustom(){ return items.filter(x => !x.seeded).length; }
+    // Route-specific refresh
+    if(route === "dashboard") renderDashboard();
+    if(route === "budget") renderBudget();
+    if(route === "events") renderEvents();
+  }
 
-    function openLogin(){ $('loginModal').style.display='flex'; }
-    function closeLogin(){ $('loginModal').style.display='none'; }
+  function routeFromHash(){
+    const h = (location.hash || "#home").replace("#","").trim().toLowerCase();
+    if(["home","dashboard","budget","events"].includes(h)) return h;
+    return "home";
+  }
 
-    function setAuth(obj){
-      if(obj) localStorage.setItem(AUTH_KEY, JSON.stringify(obj));
-      else localStorage.removeItem(AUTH_KEY);
+  // ===== Modals =====
+  const loginOverlay = $("#loginOverlay");
+  const signupOverlay = $("#signupOverlay");
 
-      items = loadBudget();
-      saved = loadSaved();
+  function openModal(which){
+    const ov = which==="login" ? loginOverlay : signupOverlay;
+    ov.classList.add("show");
+    ov.setAttribute("aria-hidden","false");
+    document.body.style.overflow="hidden";
+    setTimeout(() => {
+      const first = which==="login" ? $("#loginEmail") : $("#signupName");
+      first && first.focus();
+    }, 0);
+  }
+  function closeModal(which){
+    const ov = which==="login" ? loginOverlay : signupOverlay;
+    ov.classList.remove("show");
+    ov.setAttribute("aria-hidden","true");
+    document.body.style.overflow="";
+  }
+  function closeAllModals(){
+    closeModal("login"); closeModal("signup");
+  }
 
-      if(items.length === 0 && !isLoggedIn()) seedBudget();
-      renderBudget();
-      renderDemoActivities();
-      renderSaved();
-      renderDashboard();
+  // close modal on outside click / ESC
+  [loginOverlay, signupOverlay].forEach(ov => {
+    ov.addEventListener("click", (e) => { if(e.target === ov) closeAllModals(); });
+  });
+  window.addEventListener("keydown", (e) => {
+    if(e.key === "Escape") closeAllModals();
+  });
 
-      // App events needs rebuild after auth
-      APP_STATE.page = 1;
-      renderAppEvents();
-
-      updateAuthUI();
-      handleRoute();
-    }
-
-    // Routing for app pages (doesn't remove demo sections)
-    function showPage(id){
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      if(id){
-        const el = document.getElementById(id);
-        if(el) el.classList.add('active');
-      }
-    }
-    function handleRoute(){
-      const h = location.hash || '';
-      if(h.startsWith('#/')){
-        if(!isLoggedIn()){
-          showPage(null);
-          location.hash = '#home';
-          return;
-        }
-        if(h === '#/dashboard'){ showPage('page-dashboard'); }
-        else if(h === '#/app-events'){ showPage('page-app-events'); }
-        else if(h === '#/app-budget'){ showPage('page-app-budget'); }
-        else { showPage('page-dashboard'); }
-        window.scrollTo({ top:0, behavior:'smooth' });
-      } else {
-        showPage(null);
-      }
-    }
-    window.addEventListener('hashchange', handleRoute);
-
-    function updateAuthUI(){
-      const a = getAuth();
-      const pill = $('authPill');
-      if(pill) pill.textContent = a?.email ? ('Logged in: ' + a.email) : 'Preview';
-
-      const su = $('openSignupTop');
-      const li = $('openLoginTop');
-      if(a?.email){
-        if(su) su.style.display='none';
-        if(li){ li.textContent='Log out'; li.classList.remove('primary'); }
-        document.querySelectorAll('.navlinks a[data-mode="app"]').forEach(x=>x.style.display='inline-flex');
-        const goDashBtn = $('goDashBtn');
-        if(goDashBtn) goDashBtn.style.display = 'inline-flex';
-      } else {
-        if(su) su.style.display='inline-flex';
-        if(li){ li.textContent='Log in'; li.classList.add('primary'); }
-        document.querySelectorAll('.navlinks a[data-mode="app"]').forEach(x=>x.style.display='none');
-        const goDashBtn = $('goDashBtn');
-        if(goDashBtn) goDashBtn.style.display = 'none';
-      }
-
-      const saveStatus = $('saveStatus');
-      if(saveStatus){
-        saveStatus.textContent = a?.email ? 'Your budget' : 'Preview (session)';
-        saveStatus.style.background = a?.email ? 'rgba(34,197,94,.14)' : 'rgba(255,255,255,.08)';
-        saveStatus.style.borderColor = a?.email ? 'rgba(34,197,94,.22)' : 'rgba(255,255,255,.12)';
-      }
-
-      const syncBtn = $('syncBtn');
-      if(syncBtn){
-        syncBtn.disabled = !a?.email;
-      }
-
-      const chooseFileBtn = $('chooseFileBtn');
-      const clearFileBtn = $('clearFileBtn');
-      const extractBtn = $('extractBtn');
-      if(chooseFileBtn) chooseFileBtn.disabled = !a?.email;
-      if(clearFileBtn) clearFileBtn.disabled = !a?.email;
-      if(extractBtn) extractBtn.disabled = !a?.email;
-
-      const addBtn = $('addBtn');
-      if(!a?.email){
-        const remaining = Math.max(0, PREVIEW_CUSTOM_LIMIT - countCustom());
-        if(addBtn) addBtn.disabled = (remaining <= 0);
-      } else {
-        if(addBtn) addBtn.disabled = false;
-      }
-
-      const dt = $('dashTitle');
-      if(dt){
-        if(a?.email){
-          const name = (a.email.split('@')[0] || 'Wolfpack');
-          dt.textContent = `Welcome, ${name} 🐺`;
-        } else {
-          dt.textContent = 'Welcome back.';
-        }
-      }
-    }
-
-    // Header login/signup buttons
-    $('openSignupTop')?.addEventListener('click', ()=>{ openLogin(); $('email')?.focus(); });
-    $('openLoginTop')?.addEventListener('click', ()=>{
-      if(isLoggedIn()){ setAuth(null); toast('info','Logged out','You are back in Preview mode.'); return; }
-      openLogin(); $('email')?.focus();
-    });
-    $('closeLogin')?.addEventListener('click', closeLogin);
-    $('loginModal')?.addEventListener('click', (e)=>{ if(e.target?.id==='loginModal') closeLogin(); });
-
-    // Signup/Login/Logout logic
-    $('signupBtn')?.addEventListener('click', ()=>{
-      const email = $('email')?.value?.trim();
-      const pw = $('password')?.value || '';
-      if(!email || pw.length < 4){
-        toast('warn','Sign up needs 2 things','Enter an email + a password (4+ characters).');
-        return;
-      }
-      let users = [];
-      try { users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]') || []; } catch { users = []; }
-      if(users.some(u => (u.email||'').toLowerCase() === email.toLowerCase())){
-        toast('warn','Account exists','Use Log in instead.');
-        return;
-      }
-      users.push({ email, pw });
-      localStorage.setItem(USERS_KEY, JSON.stringify(users));
-      setAuth({ email, ts: Date.now() });
-
-      // start clean on new account
-      items = [];
-      saveBudget(items);
-      renderBudget();
-      closeLogin();
-      toast('good','Welcome to SpendingScout','Account created. Your dashboard is ready.');
-      location.hash = '#/dashboard';
+  // ===== Home demo render =====
+  function renderHomeDemo(){
+    // Demo expenses list
+    const exp = $("#demoExpenses");
+    exp.innerHTML = "";
+    demoExpenses.forEach(x => {
+      exp.appendChild(makeExpenseRow({name:x.name, amount:x.amt, category:x.cat, date:new Date()} , true));
     });
 
-    $('loginBtn')?.addEventListener('click', ()=>{
-      const email = $('email')?.value?.trim();
-      const pw = $('password')?.value || '';
-      if(!email || pw.length < 4){
-        toast('warn','Missing info','Enter your email and password.');
-        return;
-      }
-      let users = [];
-      try { users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]') || []; } catch { users = []; }
-      const ok = users.find(u => (u.email||'').toLowerCase() === email.toLowerCase() && u.pw === pw);
-      if(!ok){
-        toast('bad','Login failed','No matching account found. Sign up to create one (demo).');
-        return;
-      }
-      setAuth({ email, ts: Date.now() });
-      items = loadBudget();
-      saved = loadSaved();
-      renderBudget();
-      renderSaved();
-      renderDashboard();
-      closeLogin();
-      toast('good','Logged in','Your data is loaded on this device.');
-      location.hash = '#/dashboard';
+    // Demo events exactly 3
+    const ev = $("#demoEvents");
+    ev.innerHTML = "";
+    const start = todayLocal();
+    demoEvents.forEach((e) => {
+      const d = new Date(start);
+      d.setDate(d.getDate() + e.dateOffset);
+      ev.appendChild(makeEventCard({
+        title:e.title,
+        dateISO:d.toISOString(),
+        location:e.loc,
+        cost:e.cost,
+        link:e.link,
+        score: 999
+      }, true));
     });
 
-    $('logoutBtn')?.addEventListener('click', ()=>{ setAuth(null); closeLogin(); });
+    // Demo chart
+    drawCategoryChart($("#demoChart"), demoExpenses.map(x => ({category:x.cat, amount:x.amt})), "Demo breakdown");
+  }
 
-    $('syncBtn')?.addEventListener('click', ()=>{
-      if(!isLoggedIn()) return;
-      toast('info','Sync (MVP)','In this MVP, budgets save locally on this device. A full version would sync securely across devices.');
-    });
+  // ===== Budget rendering =====
+  function makeExpenseRow(x, isDemo=false){
+    const row = document.createElement("div");
+    row.className = "item";
+    const d = new Date(x.dateISO || x.date || Date.now());
+    const dateLabel = d.toLocaleDateString(undefined,{month:"short", day:"numeric"});
+    row.innerHTML = `
+      <div class="left">
+        <div class="title">${escapeHtml(x.name)}</div>
+        <div class="meta">${escapeHtml(x.category)} • ${escapeHtml(dateLabel)}</div>
+      </div>
+      <div class="right">
+        <div class="money">${escapeHtml(money(x.amount))}</div>
+        ${isDemo ? `<div class="mini">preview</div>` : `<button class="iconbtn" data-del="${escapeHtml(x.id)}" title="Remove">Remove</button>`}
+      </div>`;
+    return row;
+  }
 
-    // ---------- Budget ----------
-    function seedBudget(){
-      const now = Date.now();
-      items = [
-        { id: uid(), ts: now-86400000*1, type:'income', category:'Other', note:'Part-time job paycheck', amount:260, seeded:true },
-        { id: uid(), ts: now-86400000*1, type:'expense', category:'Food', note:'Groceries', amount:44.18, seeded:true },
-        { id: uid(), ts: now-86400000*1, type:'expense', category:'Food', note:'Dining hall / takeout', amount:18.75, seeded:true },
-        { id: uid(), ts: now-86400000*2, type:'expense', category:'Transportation', note:'Gas', amount:32.70, seeded:true },
-        { id: uid(), ts: now-86400000*2, type:'expense', category:'Subscriptions', note:'Spotify', amount:11.99, seeded:true },
-        { id: uid(), ts: now-86400000*3, type:'expense', category:'School', note:'Textbook / supplies', amount:27.50, seeded:true },
-        { id: uid(), ts: now-86400000*4, type:'expense', category:'Entertainment', note:'Movie ticket', amount:13.50, seeded:true }
-      ];
-      saveBudget(items);
-      renderBudget();
-      renderDashboard();
-      toast('info','Loaded demo budget','Student example transactions are now loaded.');
+  function renderBudget(){
+    // Inputs
+    $("#budgetLimit").value = String(getBudgetLimit());
+    const list = loadExpenses();
+    const el = $("#expenseList");
+    el.innerHTML = "";
+
+    if(list.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "item";
+      empty.innerHTML = `
+        <div class="left">
+          <div class="title">No expenses yet</div>
+          <div class="meta">Add an expense above or simulate parsing a statement image.</div>
+        </div>
+        <div class="right"><span class="tag">Empty</span></div>`;
+      el.appendChild(empty);
+    } else {
+      list.forEach(x => el.appendChild(makeExpenseRow(x)));
     }
 
-    function summary(){
-      const income = items.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);
-      const expenses = items.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
-      const net = income - expenses;
-      const cats = {};
-      for(const it of items){
-        if(it.type!=='expense') continue;
-        const c = it.category || 'Other';
-        cats[c] = (cats[c]||0) + Number(it.amount||0);
-      }
-      const totalExp = Object.values(cats).reduce((s,v)=>s+v,0);
-      const entries = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-      return { income, expenses, net, cats, totalExp, entries, topCat: entries.length ? entries[0][0] : '—' };
-    }
-
-    function renderBudget(){
-      const tbody = $('rows');
-      if(!tbody) return;
-      tbody.innerHTML='';
-      const sorted = [...items].sort((a,b)=> (b.ts||0)-(a.ts||0));
-
-      for(const it of sorted){
-        const tr = document.createElement('tr');
-        const d = new Date(it.ts);
-        const dateStr = isFinite(d.getTime()) ? d.toLocaleDateString() : '—';
-        const typeLabel = it.type === 'income' ? 'Income' : 'Expense';
-        const typeClass = it.type === 'income' ? 'success' : 'danger';
-        tr.innerHTML = `
-          <td class="tdMuted">${dateStr}</td>
-          <td class="${typeClass}">${typeLabel}</td>
-          <td>${escapeHtml(it.category || 'Other')}</td>
-          <td class="tdMuted">${escapeHtml(it.note || '')}</td>
-          <td class="money">${money(it.amount)}</td>
-          <td><button class="btn small" data-del="${it.id}" type="button">Delete</button></td>
-        `;
-        tbody.appendChild(tr);
-      }
-
-      tbody.querySelectorAll('[data-del]').forEach((btn)=>{
-        btn.addEventListener('click', ()=>{
-          const id = btn.getAttribute('data-del');
-          items = items.filter(x=>x.id!==id);
-          saveBudget(items);
-          renderBudget();
-          renderDashboard();
-          toast('good','Deleted','Transaction removed.');
-        });
-      });
-
-      const { income, expenses, net, entries, totalExp, topCat } = summary();
-      $('income').textContent = money(income);
-      $('expenses').textContent = money(expenses);
-      $('net').textContent = money(net);
-      $('net').className = 'v money ' + (net >= 0 ? 'success' : 'danger');
-      $('topCat').textContent = topCat;
-
-      const bars = $('bars');
-      bars.innerHTML='';
-      if(!entries.length){
-        const p = document.createElement('p');
-        p.style.margin='10px 0 0';
-        p.style.color='var(--muted)';
-        p.style.fontSize='13px';
-        p.textContent='Add expenses to see the breakdown.';
-        bars.appendChild(p);
-      } else {
-        for(const [name,val] of entries.slice(0,6)){
-          const pct = totalExp>0 ? Math.round((val/totalExp)*100) : 0;
-          const wrap = document.createElement('div');
-          wrap.innerHTML = `
-            <div class="barRow"><div class="name">${escapeHtml(name)}</div><div class="pct">${pct}% • ${money(val)}</div></div>
-            <div class="bar"><i style="width:${Math.max(6,pct)}%"></i></div>
-          `;
-          bars.appendChild(wrap);
-        }
-      }
-      updateAuthUI();
-    }
-
-    function renderDashboard(){
-      const { income, expenses, net, entries, totalExp, topCat } = summary();
-
-      $('dashIncome')?.textContent = money(income);
-      $('dashExpenses')?.textContent = money(expenses);
-
-      const dn = $('dashNet');
-      if(dn){
-        dn.textContent = money(net);
-        dn.className = 'v money ' + (net >= 0 ? 'success' : 'danger');
-      }
-      $('dashTopCat')?.textContent = topCat;
-
-      const bars = $('dashBars');
-      if(bars){
-        bars.innerHTML = '';
-        if(!entries.length){
-          const p = document.createElement('p');
-          p.style.margin='10px 0 0';
-          p.style.color='var(--muted)';
-          p.style.fontSize='13px';
-          p.textContent='Add expenses to see your breakdown.';
-          bars.appendChild(p);
-        } else {
-          for(const [name,val] of entries.slice(0,6)){
-            const pct = totalExp>0 ? Math.round((val/totalExp)*100) : 0;
-            const wrap = document.createElement('div');
-            wrap.innerHTML = `
-              <div class="barRow"><div class="name">${escapeHtml(name)}</div><div class="pct">${pct}% • ${money(val)}</div></div>
-              <div class="bar"><i style="width:${Math.max(6,pct)}%"></i></div>
-            `;
-            bars.appendChild(wrap);
-          }
-        }
-      }
-
-      const dashSaved = $('savedEventsDash');
-      if(dashSaved){
-        dashSaved.innerHTML = '';
-        if(!isLoggedIn()){
-          dashSaved.innerHTML = `<div style="color:var(--muted2); font-size:12px;">Log in to see saved events.</div>`;
-        } else if(!saved.length){
-          dashSaved.innerHTML = `<div style="color:var(--muted2); font-size:12px;">No saved events yet — save one from Events.</div>`;
-        } else {
-          for(const ev of saved.slice().reverse().slice(0,4)){
-            const row = document.createElement('div');
-            row.style.border = '1px solid rgba(255,255,255,.12)';
-            row.style.borderRadius = '14px';
-            row.style.padding = '12px';
-            row.style.background = 'rgba(255,255,255,.04)';
-            row.innerHTML = `<div style="font-weight:800;">${escapeHtml(ev.title)}</div>
-                             <div style="color:var(--muted2); font-size:12px;">${escapeHtml(ev.dateLabel)} • ${escapeHtml(ev.location)}</div>`;
-            dashSaved.appendChild(row);
-          }
-        }
-      }
-    }
-
-    function addTransaction(){
-      if(!isLoggedIn()){
-        const remaining = PREVIEW_CUSTOM_LIMIT - countCustom();
-        if(remaining <= 0){
-          toast('warn','Preview limit reached','You can add 3 custom transactions in Preview. Log in for unlimited.');
-          openLogin();
-          return;
-        }
-      }
-      const type = $('type').value;
-      const category = $('category').value;
-      const amountRaw = $('amount').value.trim();
-      const note = $('note').value.trim();
-      const amount = Number(amountRaw);
-      if(!isFinite(amount) || amount<=0){
-        toast('warn','Invalid amount','Enter a valid amount like 12.50.');
-        return;
-      }
-      items.push({ id: uid(), ts: Date.now(), type, category, note, amount, seeded:false });
-      saveBudget(items);
-      renderBudget();
-      renderDashboard();
-      $('amount').value='';
-      $('note').value='';
-      toast('good','Added','Transaction saved.');
-    }
-
-    async function resetAll(){
-      const ok = await confirmTheme({
-        title:'Reset budget?',
-        body:'This clears data for Preview or your account on this device.',
-        okText:'Reset',
-        cancelText:'Cancel'
-      });
-      if(!ok) return;
-      items=[];
-      saveBudget(items);
-      renderBudget();
-      renderDashboard();
-      if(!isLoggedIn()) seedBudget();
-      toast('info','Reset complete','Your budget view was cleared.');
-    }
-
-    $('addBtn')?.addEventListener('click', addTransaction);
-    $('seedBtn')?.addEventListener('click', ()=>{
-      if(isLoggedIn()){
-        toast('warn','Preview demo only','Log out to load the student example data.');
-        return;
-      }
-      seedBudget();
-    });
-    $('resetBtn')?.addEventListener('click', resetAll);
-    $('amount')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTransaction(); });
-    $('note')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTransaction(); });
-
-    document.querySelectorAll('[data-chip]').forEach(el=>{
-      el.addEventListener('click', ()=>{
-        try{
-          const d = JSON.parse(el.getAttribute('data-chip'));
-          $('type').value = d.type || 'expense';
-          $('category').value = d.category || 'Other';
-          $('amount').value = d.amount || '';
-          $('note').value = d.note || '';
-          $('amount')?.focus();
-        } catch {}
+    // Delete handlers
+    $$("[data-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-del");
+        removeExpenseById(id);
+        toast("good","Removed","Expense deleted.");
+        renderBudget();
+        renderDashboard(); // keep in sync
       });
     });
 
-    // ---------- Statement upload (drag/drop + click) ----------
-    const stmtFile = $('stmtFile');
-    const stmtPreview = $('stmtPreview');
-    const dropArea = $('dropArea');
-    const chooseFileBtn = $('chooseFileBtn');
-    const clearFileBtn = $('clearFileBtn');
-    const uploadStatus = $('uploadStatus');
+    // KPIs + chart
+    const spent = list.reduce((s,x)=>s+Number(x.amount||0),0);
+    const lim = getBudgetLimit();
+    const remaining = lim - spent;
+    $("#spentKpi").textContent = money(spent);
+    $("#spentSub").textContent = `${list.length} expense${list.length===1?"":"s"}`;
+    $("#remainKpi").textContent = money(remaining);
+    $("#remainKpi").style.color = remaining >= 0 ? "var(--good)" : "var(--bad)";
+    $("#remainSub").textContent = remaining >= 0 ? "Budget left" : "Over budget";
 
-    function clearStatement(){
-      if(stmtFile) stmtFile.value = '';
-      if(stmtPreview){ stmtPreview.style.display='none'; stmtPreview.innerHTML=''; }
-      if(uploadStatus) uploadStatus.textContent = 'No file selected';
-    }
-    function acceptFile(f){
-      if(!isLoggedIn()){
-        toast('warn','Login required','Log in to enable statement image uploads.');
-        openLogin();
-        return;
-      }
-      if(!f) return;
-      const url = URL.createObjectURL(f);
-      if(stmtPreview){
-        stmtPreview.style.display='block';
-        stmtPreview.innerHTML = `<img alt="Statement preview" src="${url}" />`;
-      }
-      if(uploadStatus) uploadStatus.textContent = f.name || 'Selected';
-      toast('good','Uploaded (local)','Image is previewed on this device.');
-    }
+    drawCategoryChart($("#breakdownChart"), list, "Your spending breakdown");
+  }
 
-    function chooseFile(){
-      if(!isLoggedIn()){ toast('warn','Login required','Log in to enable uploads.'); openLogin(); return; }
-      stmtFile?.click();
-    }
+  // ===== Dashboard rendering =====
+  function renderDashboard(){
+    const expenses = loadExpenses();
+    const lim = getBudgetLimit();
+    const spent = expenses.reduce((s,x)=>s+Number(x.amount||0),0);
+    const remaining = lim - spent;
 
-    chooseFileBtn?.addEventListener('click', chooseFile);
-    dropArea?.addEventListener('click', chooseFile);
-    dropArea?.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') chooseFile(); });
-    clearFileBtn?.addEventListener('click', clearStatement);
-
-    stmtFile?.addEventListener('change', ()=>{
-      const f = stmtFile.files && stmtFile.files[0];
-      if(!f){ clearStatement(); return; }
-      acceptFile(f);
-    });
-
-    function prevent(e){ e.preventDefault(); e.stopPropagation(); }
-    ['dragenter','dragover'].forEach(evt=>{
-      dropArea?.addEventListener(evt, (e)=>{ prevent(e); dropArea.classList.add('drag'); });
-    });
-    ['dragleave','drop'].forEach(evt=>{
-      dropArea?.addEventListener(evt, (e)=>{ prevent(e); dropArea.classList.remove('drag'); });
-    });
-    dropArea?.addEventListener('drop', (e)=>{
-      const dt = e.dataTransfer;
-      const f = dt && dt.files && dt.files[0];
-      if(f) acceptFile(f);
-    });
-
-    $('extractBtn')?.addEventListener('click', ()=>{
-      if(!isLoggedIn()){
-        toast('warn','Login required','Log in to enable prefill.');
-        openLogin();
-        return;
-      }
-      $('type').value = 'expense';
-      $('category').value = 'Food';
-      $('amount').value = '44.18';
-      $('note').value = 'Target groceries (from statement image)';
-      toast('info','Prefill complete','Review the fields and click Add.');
-    });
-
-    // ---------- Events ----------
-    // Demo page must show 3 events total:
-    const DEMO_ACTIVITIES = [
-      { id:'demo1', audience:'campus', title:'Student Organization Social Night', dateLabel:'Next week • Evening', location:'Student Union / Main Campus', cost:'Free', link:'#' },
-      { id:'demo2', audience:'triangle', title:'Local Concert / Live Music', dateLabel:'This month • Night', location:'Downtown venue (Raleigh)', cost:'Ticketed', link:'#' },
-      { id:'demo3', audience:'triangle', title:'Sports Game (Basketball/Hockey)', dateLabel:'This month • Evening', location:'Arena (Raleigh)', cost:'Ticketed', link:'#' }
+    // KPIs
+    const k = $("#dashKpis");
+    k.innerHTML = "";
+    const kpis = [
+      ["Monthly budget", money(lim), "Change this on the Budget page", "red"],
+      ["Spent so far", money(spent), `${expenses.length} expense${expenses.length===1?"":"s"} logged`, "gray"],
+      ["Remaining", money(remaining), remaining>=0 ? "You’re on track" : "Over budget right now", remaining>=0 ? "green" : "red"]
     ];
+    kpis.forEach(([lab,val,sub,tone]) => {
+      const div = document.createElement("div");
+      div.className = "kpi";
+      div.innerHTML = `
+        <div class="label">${escapeHtml(lab)}</div>
+        <div class="value">${escapeHtml(val)}</div>
+        <div class="sub">${escapeHtml(sub)}</div>`;
+      k.appendChild(div);
+    });
 
-    function renderDemoActivities(){
-      const wrap = $('activityCards');
-      if(!wrap) return;
-      const filter = ($('activityFilter')?.value || 'all');
-      const list = DEMO_ACTIVITIES.filter(a => filter==='all' ? true : a.audience===filter);
-      wrap.innerHTML='';
-      for(const a of list){ // stays at 3 max by design
-        const card = document.createElement('div');
-        card.className = 'card';
-        const isFree = (a.cost || '').toLowerCase() === 'free';
-        const tagBg = isFree
-          ? 'background:rgba(34,197,94,.14); border-color:rgba(34,197,94,.22);'
-          : 'background:rgba(245,158,11,.14); border-color:rgba(245,158,11,.22);';
-        const scope = a.audience === 'campus' ? 'NCSU' : 'Triangle';
-        card.innerHTML = `
-          <div class="tag" style="${tagBg}">🎟️ ${escapeHtml(a.cost)} • ${scope}</div>
-          <h3>${escapeHtml(a.title)}</h3>
-          <p style="margin:0; color:var(--muted);">${escapeHtml(a.dateLabel)}<br/>${escapeHtml(a.location)}</p>
-          <div style="height:12px"></div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <a class="btn" href="${a.link}" target="_blank" rel="noreferrer" style="width:fit-content">View details</a>
-            <button class="btn" data-save="${escapeHtml(a.id)}" type="button">Save</button>
-          </div>
-        `;
-        wrap.appendChild(card);
+    // Chart
+    drawCategoryChart($("#budgetChart"), expenses, "Dashboard breakdown");
+
+    // Suggestions based on remaining budget
+    const all = buildEvents();
+    const affordable = all.filter(e => {
+      const c = (e.cost || "").toLowerCase();
+      if(c.includes("free")) return true;
+      // Parse numeric cost like "$10" or "$5–$12"
+      const nums = (e.cost.match(/\d+(\.\d+)?/g) || []).map(Number);
+      const minCost = nums.length ? Math.min(...nums) : 0;
+      return minCost <= Math.max(0, remaining);
+    });
+
+    const suggestions = affordable
+      .sort((a,b)=> b.score - a.score)
+      .slice(0,3);
+
+    const box = $("#suggestedEvents");
+    box.innerHTML = "";
+    if(suggestions.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "item";
+      empty.innerHTML = `
+        <div class="left">
+          <div class="title">No suggestions yet</div>
+          <div class="meta">Add expenses + set a budget limit to generate affordable recommendations.</div>
+        </div>
+        <div class="right"><span class="tag">Tip</span></div>`;
+      box.appendChild(empty);
+    } else {
+      suggestions.forEach(e => box.appendChild(makeEventCard(e, true)));
+    }
+
+    // Feedback links
+    $("#feedbackLinkDash").href = FEEDBACK_URL;
+  }
+
+  // ===== Events rendering (pagination + sorting) =====
+  let eventsState = { all: [], page: 1, perPage: 5, sort: "recommended" };
+
+  function makeEventCard(e, compact=false){
+    const wrap = document.createElement("div");
+    wrap.className = "event";
+    const d = new Date(e.dateISO);
+    const {dow, md} = fmtDateLabel(d);
+    const sourceTag = e.source === "ncsu" ? "NCSU" : "Raleigh";
+    wrap.innerHTML = `
+      <div class="date">
+        <div class="dow">${escapeHtml(dow)}</div>
+        <div class="md">${escapeHtml(md)}</div>
+      </div>
+      <div class="main">
+        <div class="t">${escapeHtml(e.title)}</div>
+        <div class="m">
+          ${escapeHtml(e.location)} • <span class="tag ${e.source==="ncsu" ? "red" : ""}" style="padding:4px 8px;font-size:11px">${escapeHtml(sourceTag)}</span>
+        </div>
+      </div>
+      <div class="side">
+        <div class="cost">${escapeHtml(e.cost)}</div>
+        <a class="btn ${compact ? "ghost" : "primary"}" href="${escapeHtml(e.link)}" target="_blank" rel="noopener">View</a>
+      </div>`;
+    return wrap;
+  }
+
+  function getSortedEvents(){
+    const list = [...eventsState.all];
+    if(eventsState.sort === "soonest"){
+      list.sort((a,b)=> new Date(a.dateISO) - new Date(b.dateISO));
+    } else {
+      // recommended: higher score first; tie-breaker soonest
+      list.sort((a,b)=> (b.score - a.score) || (new Date(a.dateISO)-new Date(b.dateISO)));
+    }
+    return list;
+  }
+
+  function renderEvents(){
+    eventsState.all = buildEvents(); // always refresh dates
+    const list = getSortedEvents();
+
+    const total = list.length;
+    const pages = Math.max(1, Math.ceil(total / eventsState.perPage));
+    eventsState.page = clamp(eventsState.page, 1, pages);
+
+    const start = (eventsState.page - 1) * eventsState.perPage;
+    const slice = list.slice(start, start + eventsState.perPage);
+
+    const host = $("#eventsList");
+    host.innerHTML = "";
+    slice.forEach(e => host.appendChild(makeEventCard(e)));
+
+    $("#pageInfo").textContent = `Page ${eventsState.page} of ${pages} • Showing ${start+1}-${Math.min(start+eventsState.perPage,total)} of ${total}`;
+
+    $("#prevPage").disabled = eventsState.page <= 1;
+    $("#nextPage").disabled = eventsState.page >= pages;
+
+    $("#feedbackLinkEvents").href = FEEDBACK_URL;
+  }
+
+  // ===== Charts (simple canvas bars by category) =====
+  function drawCategoryChart(canvas, expenses, subtitle){
+    if(!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    // gather totals
+    const totals = {};
+    (expenses || []).forEach(x => {
+      const cat = x.category || x.cat || "Other";
+      const amt = Number(x.amount ?? x.amt ?? 0) || 0;
+      totals[cat] = (totals[cat] || 0) + amt;
+    });
+    const entries = Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const maxVal = Math.max(10, ...entries.map(e=>e[1]||0));
+
+    // background grid
+    ctx.fillStyle = "rgba(255,255,255,.02)";
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = "rgba(255,255,255,.10)";
+    ctx.lineWidth = 1;
+    for(let i=1;i<=3;i++){
+      const y = 34 + (H-64) * (i/3);
+      ctx.beginPath(); ctx.moveTo(16,y); ctx.lineTo(W-16,y); ctx.stroke();
+    }
+
+    // title
+    ctx.fillStyle = "rgba(255,255,255,.90)";
+    ctx.font = "900 14px ui-sans-serif, system-ui";
+    ctx.fillText("Spending by category", 16, 22);
+    ctx.fillStyle = "rgba(255,255,255,.60)";
+    ctx.font = "700 12px ui-sans-serif, system-ui";
+    ctx.fillText(subtitle || "", 16, 40);
+
+    if(entries.length === 0){
+      ctx.fillStyle = "rgba(255,255,255,.55)";
+      ctx.font = "800 13px ui-sans-serif, system-ui";
+      ctx.fillText("No data yet — add expenses to see a breakdown.", 16, Math.floor(H/2));
+      return;
+    }
+
+    const chartTop = 56, chartBottom = H-18;
+    const chartH = chartBottom - chartTop;
+    const barW = Math.floor((W - 32 - (entries.length-1)*10) / entries.length);
+
+    entries.forEach(([cat,val], i) => {
+      const x = 16 + i*(barW+10);
+      const h = Math.max(4, Math.round((val/maxVal) * (chartH-42)));
+      const y = chartBottom - h;
+
+      // bar
+      const grad = ctx.createLinearGradient(0, y, 0, y+h);
+      grad.addColorStop(0, "rgba(204,0,0,.95)");
+      grad.addColorStop(1, "rgba(176,0,0,.55)");
+      ctx.fillStyle = grad;
+      roundRect(ctx, x, y, barW, h, 10);
+      ctx.fill();
+
+      // value
+      ctx.fillStyle = "rgba(255,255,255,.88)";
+      ctx.font = "900 12px ui-sans-serif, system-ui";
+      ctx.fillText("$"+Math.round(val), x, y-6);
+
+      // label
+      ctx.fillStyle = "rgba(255,255,255,.62)";
+      ctx.font = "800 11px ui-sans-serif, system-ui";
+      const label = String(cat).replace("Gas/Transport","Gas").replace("Subscriptions","Subs");
+      ctx.fillText(label.length>10 ? label.slice(0,10)+"…" : label, x, chartBottom+14);
+    });
+  }
+
+  function roundRect(ctx, x, y, w, h, r){
+    r = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y, x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x, y+h, r);
+    ctx.arcTo(x, y+h, x, y, r);
+    ctx.arcTo(x, y, x+w, y, r);
+    ctx.closePath();
+  }
+
+  // ===== Wire up UI =====
+  function wire(){
+    // Feedback links
+    $("#feedbackLinkHome").href = FEEDBACK_URL;
+    $("#feedbackLinkDash").href = FEEDBACK_URL;
+    $("#feedbackLinkEvents").href = FEEDBACK_URL;
+
+    // Navbar tabs (SPA)
+    Object.entries(tabs).forEach(([route, btn]) => {
+      btn.addEventListener("click", () => location.hash = route);
+    });
+    $("#brandLink").addEventListener("click", (e) => {
+      // keep expected behavior: home if logged out, dashboard if logged in
+      e.preventDefault();
+      location.hash = isLoggedIn() ? "dashboard" : "home";
+    });
+
+    // Login / signup buttons
+    const openLogin = () => openModal("login");
+    const openSignup = () => openModal("signup");
+
+    $("#btnLogin").addEventListener("click", openLogin);
+    $("#btnSignup").addEventListener("click", openSignup);
+    $("#btnHomeLogin").addEventListener("click", openLogin);
+    $("#btnHomeSignup").addEventListener("click", openSignup);
+
+    $("#closeLogin").addEventListener("click", () => closeModal("login"));
+    $("#closeSignup").addEventListener("click", () => closeModal("signup"));
+    $("#toSignup").addEventListener("click", () => { closeModal("login"); openModal("signup"); });
+    $("#toLogin").addEventListener("click", () => { closeModal("signup"); openModal("login"); });
+
+    // Login action
+    $("#doLogin").addEventListener("click", () => {
+      const email = $("#loginEmail").value.trim();
+      const pass = $("#loginPass").value.trim();
+      if(!email || !pass){
+        toast("warn","Missing info","Please enter email and password.");
+        return;
       }
-      hookSaveButtons(wrap, (id)=>DEMO_ACTIVITIES.find(x=>x.id===id));
-      updateAuthUI();
-    }
-
-    $('activityFilter')?.addEventListener('change', renderDemoActivities);
-
-    // Full 50-event dataset for the "All Events" page (example listings).
-    // Dates are real Date objects; we show a readable label.
-    function formatDate(dt){
-      const d = new Date(dt);
-      const opts = { weekday:'short', month:'short', day:'numeric' };
-      return isFinite(d.getTime()) ? d.toLocaleDateString(undefined, opts) : '—';
-    }
-    function addDays(base, days){ const d = new Date(base); d.setDate(d.getDate()+days); return d; }
-
-    function build50Events(){
-      const base = new Date(); // today on user's device
-      const templates = [
-        // campus
-        {audience:'campus', cost:'Free',     title:'Wolfpack Fitness Pop-Up', location:'Carmichael Gym'},
-        {audience:'campus', cost:'Free',     title:'Student Org Fair Mini', location:'Talley Student Union'},
-        {audience:'campus', cost:'Free',     title:'Career Prep Workshop', location:'Hill Library'},
-        {audience:'campus', cost:'Free',     title:'Late Night Study + Snacks', location:'D.H. Hill Commons'},
-        {audience:'campus', cost:'Ticketed', title:'Campus Comedy Night', location:'Witherspoon Cinema'},
-        {audience:'campus', cost:'Free',     title:'Wellness Check-In Event', location:'Wellness & Recreation'},
-        {audience:'campus', cost:'Free',     title:'Engineering Club Meetup', location:'EB2 Lobby'},
-        {audience:'campus', cost:'Free',     title:'Sustainability Table', location:'Brickyard'},
-        // triangle
-        {audience:'triangle', cost:'Free',     title:'Downtown Art Walk', location:'Downtown Raleigh'},
-        {audience:'triangle', cost:'Ticketed', title:'Live Music Night', location:'Raleigh Venue'},
-        {audience:'triangle', cost:'Free',     title:'Food Truck Rodeo', location:'City Plaza'},
-        {audience:'triangle', cost:'Ticketed', title:'Hockey Game Night', location:'Lenovo Center'},
-        {audience:'triangle', cost:'Ticketed', title:'College Basketball Game', location:'Arena (Triangle)'},
-        {audience:'triangle', cost:'Free',     title:'Farmers Market Trip', location:'State Farmers Market'},
-        {audience:'triangle', cost:'Ticketed', title:'Comedy Show', location:'Raleigh Theater'},
-        {audience:'triangle', cost:'Free',     title:'Museum Free Day', location:'Downtown Museums'}
-      ];
-
-      const out = [];
-      for(let i=0;i<50;i++){
-        const t = templates[i % templates.length];
-        const days = 2 + (i*2) + (i%3); // spreads out across ~3 months
-        const dt = addDays(base, days);
-        const startHour = (i % 5 === 0) ? 19 : (i % 4 === 0) ? 18 : (i % 3 === 0) ? 17 : 11;
-        dt.setHours(startHour, 0, 0, 0);
-
-        const price = (t.cost === 'Free') ? 0 : (12 + (i%6)*5);
-        const tag = t.audience === 'campus' ? 'NCSU' : 'Triangle';
-
-        // "Recommended" score: free + campus + soon + cheaper
-        const soonBonus = Math.max(0, 40 - Math.floor((dt - base)/(1000*60*60*24)));
-        const score =
-          (t.cost === 'Free' ? 55 : 20) +
-          (t.audience === 'campus' ? 18 : 10) +
-          Math.min(40, soonBonus) +
-          Math.max(0, 18 - Math.min(18, price/5));
-
-        out.push({
-          id: 'ev' + (i+1),
-          audience: t.audience,
-          cost: t.cost,
-          price,
-          title: t.title + (i%7===0 ? ' (Special)' : ''),
-          date: dt.toISOString(),
-          dateLabel: `${formatDate(dt)} • ${startHour}:00`,
-          location: t.location,
-          link: '#',
-          recommendedScore: Math.round(score),
-          scopeTag: tag
-        });
+      // if no stored name, derive from email prefix
+      if(!localStorage.getItem(STORAGE.userName)){
+        const base = email.split("@")[0] || "Wolfpack";
+        setUserName(base.charAt(0).toUpperCase() + base.slice(1));
       }
-      return out;
-    }
+      setLoggedIn(true);
+      closeModal("login");
+      toast("good","Logged in", "Welcome back.");
+      location.hash = "dashboard"; // rule: land on Dashboard
+      applyAuthUI();
+    });
 
-    const ALL_EVENTS_50 = build50Events();
+    // Signup action
+    $("#doSignup").addEventListener("click", () => {
+      const name = $("#signupName").value.trim();
+      const email = $("#signupEmail").value.trim();
+      const pass = $("#signupPass").value.trim();
+      if(!name || !email || !pass){
+        toast("warn","Missing info","Please fill out all fields.");
+        return;
+      }
+      setUserName(name);
+      setLoggedIn(true);
+      closeModal("signup");
+      toast("good","Account created", "You’re in. Redirecting to Dashboard.");
+      location.hash = "dashboard";
+      applyAuthUI();
+    });
 
-    // Save/unsave
-    function hookSaveButtons(container, getEventById){
-      container.querySelectorAll('[data-save]').forEach((btn)=>{
-        btn.addEventListener('click', ()=>{
-          const id = btn.getAttribute('data-save');
-          if(!isLoggedIn()){
-            toast('warn','Create an account','Log in to save events to your list.');
-            openLogin();
-            return;
-          }
-          const ev = getEventById(id);
-          if(!ev) return;
+    // Logout
+    $("#btnLogout").addEventListener("click", () => {
+      setLoggedIn(false);
+      toast("good","Logged out","See you next time.");
+      location.hash = "home";
+      applyAuthUI();
+    });
 
-          // Normalize shape for saved list
-          const savedObj = {
-            id: ev.id,
-            title: ev.title,
-            date: ev.date || null,
-            dateLabel: ev.dateLabel || '—',
-            location: ev.location || '—',
-            cost: ev.cost || '—',
-            ts: Date.now()
-          };
-
-          if(saved.some(x=>x.id===savedObj.id)){
-            toast('info','Already saved','That event is already in your list.');
-            return;
-          }
-          saved.push(savedObj);
-          saveSaved(saved);
-          toast('good','Saved','Added to your saved list.');
-        });
+    // Budget: add expense
+    $("#addExpense").addEventListener("click", () => {
+      const name = $("#expName").value.trim();
+      const amt = Number($("#expAmt").value);
+      const cat = $("#expCat").value;
+      if(!name || !Number.isFinite(amt) || amt <= 0){
+        toast("warn","Check fields","Enter an expense name and a valid amount.");
+        return;
+      }
+      addExpenseObj({
+        id: "ex_" + Math.random().toString(16).slice(2) + Date.now().toString(16),
+        name, amount: Math.round(amt*100)/100,
+        category: cat,
+        dateISO: new Date().toISOString()
       });
-      updateAuthUI();
-    }
-
-    function renderSaved(){
-      const s1 = $('savedEventsApp');
-      if(s1){
-        s1.innerHTML = '';
-        if(!saved.length){
-          s1.innerHTML = `<div style="color:var(--muted2); font-size:12px;">No saved events yet.</div>`;
-        } else {
-          for(const ev of saved.slice().reverse()){
-            const row = document.createElement('div');
-            row.style.border='1px solid rgba(255,255,255,.12)';
-            row.style.borderRadius='14px';
-            row.style.padding='12px';
-            row.style.background='rgba(255,255,255,.04)';
-            row.innerHTML = `
-              <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
-                <div>
-                  <div style="font-weight:800;">${escapeHtml(ev.title)}</div>
-                  <div style="color:var(--muted2); font-size:12px;">${escapeHtml(ev.dateLabel)} • ${escapeHtml(ev.location)}</div>
-                </div>
-                <button class="btn small" data-unsave="${escapeHtml(ev.id)}" type="button">Remove</button>
-              </div>
-            `;
-            s1.appendChild(row);
-          }
-          s1.querySelectorAll('[data-unsave]').forEach(btn=>{
-            btn.addEventListener('click', ()=>{
-              const id = btn.getAttribute('data-unsave');
-              saved = saved.filter(x=>x.id!==id);
-              saveSaved(saved);
-              toast('info','Removed','Event removed from saved list.');
-            });
-          });
-        }
-      }
+      $("#expName").value = "";
+      $("#expAmt").value = "";
+      toast("good","Added","Expense saved.");
+      renderBudget();
       renderDashboard();
+    });
+
+    // Budget limit change (live)
+    $("#budgetLimit").addEventListener("input", () => {
+      setBudgetLimit($("#budgetLimit").value);
+      renderBudget();
+      renderDashboard();
+    });
+
+    // Clear all
+    $("#clearExpenses").addEventListener("click", () => {
+      clearExpenses();
+      toast("good","Cleared","All expenses removed.");
+      renderBudget();
+      renderDashboard();
+    });
+
+    // Statement image upload demo
+    const drop = $("#dropzone");
+    const pick = $("#filePick");
+    let pickedFile = null;
+
+    function setPicked(file){
+      pickedFile = file || null;
+      $("#parseDemo").disabled = !pickedFile;
+      $("#fileStatus").textContent = pickedFile ? `Selected: ${pickedFile.name}` : "No file selected.";
     }
 
-    // All Events page: sorting + paging
-    const APP_STATE = { page: 1 };
+    $("#pickFile").addEventListener("click", () => pick.click());
+    pick.addEventListener("change", () => setPicked(pick.files && pick.files[0] ? pick.files[0] : null));
 
-    function getFilteredEvents(){
-      const area = $('activityFilterApp')?.value || 'all';
-      const sort = $('sortApp')?.value || 'recommended';
-      const q = ($('searchApp')?.value || '').trim().toLowerCase();
-
-      let list = ALL_EVENTS_50.slice();
-
-      if(area !== 'all') list = list.filter(e => e.audience === area);
-      if(q) list = list.filter(e =>
-        (e.title||'').toLowerCase().includes(q) ||
-        (e.location||'').toLowerCase().includes(q) ||
-        (e.scopeTag||'').toLowerCase().includes(q)
-      );
-
-      if(sort === 'date'){
-        list.sort((a,b)=> new Date(a.date) - new Date(b.date));
+    ["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, (e) => {
+      e.preventDefault(); e.stopPropagation();
+      drop.classList.add("drag");
+    }));
+    ["dragleave","drop"].forEach(ev => drop.addEventListener(ev, (e) => {
+      e.preventDefault(); e.stopPropagation();
+      drop.classList.remove("drag");
+    }));
+    drop.addEventListener("drop", (e) => {
+      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if(f && f.type.startsWith("image/")){
+        setPicked(f);
+        toast("good","File added","Ready to simulate parsing.");
       } else {
-        // recommended: high score then soonest
-        list.sort((a,b)=> (b.recommendedScore - a.recommendedScore) || (new Date(a.date) - new Date(b.date)));
+        toast("warn","Unsupported","Please drop an image file.");
       }
-      return list;
+    });
+
+    $("#parseDemo").addEventListener("click", () => {
+      if(!pickedFile) return;
+      // Generate 4–7 realistic transactions from filename seed
+      const seed = (pickedFile.name + pickedFile.size).split("").reduce((s,c)=>s+c.charCodeAt(0),0);
+      const rng = mulberry32(seed);
+      const merchants = [
+        ["Talley Market", "Food"],
+        ["Jubala Coffee", "Food"],
+        ["Sheetz", "Gas/Transport"],
+        ["Target", "Other"],
+        ["Amazon", "Other"],
+        ["Spotify", "Subscriptions"],
+        ["Campus Print", "School"],
+        ["Cook Out", "Food"],
+        ["Wolfpack Outfitters", "Other"]
+      ];
+      const n = 4 + Math.floor(rng()*4);
+      const now = new Date();
+      for(let i=0;i<n;i++){
+        const m = merchants[Math.floor(rng()*merchants.length)];
+        const amt = Math.round((3 + rng()*42) * 100)/100;
+        const d = new Date(now);
+        d.setDate(d.getDate() - Math.floor(rng()*8));
+        addExpenseObj({
+          id: "px_" + Math.random().toString(16).slice(2) + Date.now().toString(16),
+          name: m[0],
+          amount: amt,
+          category: m[1],
+          dateISO: d.toISOString()
+        });
+      }
+      toast("good","Parsed (demo)","Added sample transactions from your image.");
+      setPicked(null);
+      renderBudget();
+      renderDashboard();
+    });
+
+    // Events controls
+    $("#sortEvents").addEventListener("change", () => {
+      eventsState.sort = $("#sortEvents").value;
+      eventsState.page = 1;
+      renderEvents();
+    });
+    $("#prevPage").addEventListener("click", () => { eventsState.page--; renderEvents(); });
+    $("#nextPage").addEventListener("click", () => { eventsState.page++; renderEvents(); });
+
+    // Dashboard quick nav
+    $("#goEvents").addEventListener("click", () => location.hash = "events");
+  }
+
+  function mulberry32(a){
+    return function(){
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
     }
+  }
 
-    function renderPager(total, pageSize){
-      const btns = $('pagerBtns');
-      const meta = $('resultsMeta');
-      if(meta) meta.innerHTML = `Showing <strong>${total}</strong> results`;
-      if(!btns) return;
-
-      btns.innerHTML = '';
-
-      const pages = Math.max(1, Math.ceil(total / pageSize));
-      APP_STATE.page = Math.min(APP_STATE.page, pages);
-
-      const mk = (label, onClick, disabled=false, active=false) => {
-        const b = document.createElement('button');
-        b.className = 'pageBtn' + (active ? ' active' : '');
-        b.type = 'button';
-        b.textContent = label;
-        b.disabled = disabled;
-        b.addEventListener('click', onClick);
-        return b;
-      };
-
-      btns.appendChild(mk('‹', ()=>{ APP_STATE.page = Math.max(1, APP_STATE.page-1); renderAppEvents(); }, APP_STATE.page===1));
-
-      // show up to 7 page buttons around current
-      const start = Math.max(1, APP_STATE.page - 3);
-      const end = Math.min(pages, start + 6);
-
-      if(start > 1){
-        btns.appendChild(mk('1', ()=>{ APP_STATE.page = 1; renderAppEvents(); }, false, APP_STATE.page===1));
-        if(start > 2){
-          const dots = document.createElement('span');
-          dots.style.color='var(--muted2)';
-          dots.textContent='…';
-          btns.appendChild(dots);
-        }
-      }
-
-      for(let p=start; p<=end; p++){
-        btns.appendChild(mk(String(p), ()=>{ APP_STATE.page = p; renderAppEvents(); }, false, APP_STATE.page===p));
-      }
-
-      if(end < pages){
-        if(end < pages-1){
-          const dots = document.createElement('span');
-          dots.style.color='var(--muted2)';
-          dots.textContent='…';
-          btns.appendChild(dots);
-        }
-        btns.appendChild(mk(String(pages), ()=>{ APP_STATE.page = pages; renderAppEvents(); }, false, APP_STATE.page===pages));
-      }
-
-      btns.appendChild(mk('›', ()=>{ APP_STATE.page = Math.min(pages, APP_STATE.page+1); renderAppEvents(); }, APP_STATE.page===pages));
+  // ===== Auth UI + initial load =====
+  function applyAuthUI(){
+    // Start state rule: not logged in (unless localStorage says otherwise)
+    const logged = isLoggedIn();
+    if(!logged){
+      // ensure nav tabs look disabled-ish (still visible but guarded)
+      $("#tabDashboard").disabled = false;
+      $("#tabBudget").disabled = false;
+      $("#tabEvents").disabled = false;
     }
+    $("#feedbackLinkHome").href = FEEDBACK_URL;
+    $("#feedbackLinkDash").href = FEEDBACK_URL;
+    $("#feedbackLinkEvents").href = FEEDBACK_URL;
 
-    function renderAppEvents(){
-      const wrap = $('activityCardsApp');
-      if(!wrap) return;
+    // If logged in, go to last route or dashboard; otherwise home.
+    const route = routeFromHash();
+    showPage(route);
+  }
 
-      const pageSize = Number($('pageSizeApp')?.value || 9);
-      const list = getFilteredEvents();
-      const pages = Math.max(1, Math.ceil(list.length / pageSize));
-      APP_STATE.page = Math.min(APP_STATE.page, pages);
+  // ===== Init =====
+  wire();
+  renderHomeDemo();
 
-      const start = (APP_STATE.page - 1) * pageSize;
-      const chunk = list.slice(start, start + pageSize);
+  window.addEventListener("hashchange", () => showPage(routeFromHash()));
 
-      wrap.innerHTML = '';
-      for(const e of chunk){
-        const card = document.createElement('div');
-        card.className = 'card';
+  // If someone opens the file fresh, default to not logged in unless they previously logged in.
+  // Requirement: "Site starts not logged in" — we respect that for first-time users.
+  // If you want absolute reset every open, uncomment next line:
+  // localStorage.removeItem(STORAGE.loggedIn);
 
-        const isFree = (e.cost || '').toLowerCase() === 'free';
-        const tagBg = isFree
-          ? 'background:rgba(34,197,94,.14); border-color:rgba(34,197,94,.22);'
-          : 'background:rgba(245,158,11,.14); border-color:rgba(245,158,11,.22);';
+  // Requirement: Site starts NOT logged in on every fresh load.
+  setLoggedIn(false);
 
-        const costLabel = isFree ? 'Free' : `Ticketed ~$${e.price}`;
-        const sub = `${e.dateLabel}<br/>${e.location}`;
+  // Ensure correct starting route based on auth
+  if(!location.hash) location.hash = "home";
+  applyAuthUI();
 
-        card.innerHTML = `
-          <div class="tag" style="${tagBg}">🎟️ ${escapeHtml(costLabel)} • ${escapeHtml(e.scopeTag)}</div>
-          <h3>${escapeHtml(e.title)}</h3>
-          <p style="margin:0; color:var(--muted);">${sub}</p>
-          <div style="height:12px"></div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <a class="btn" href="${e.link}" target="_blank" rel="noreferrer" style="width:fit-content">View details</a>
-            <button class="btn" data-save="${escapeHtml(e.id)}" type="button">Save</button>
-          </div>
-          <div style="height:10px"></div>
-          <div style="color:var(--muted2); font-size:12px;">Recommended score: <b>${e.recommendedScore}</b></div>
-        `;
-        wrap.appendChild(card);
-      }
-
-      hookSaveButtons(wrap, (id)=>ALL_EVENTS_50.find(x=>x.id===id));
-      renderPager(list.length, pageSize);
-      updateAuthUI();
-    }
-
-    // App events controls
-    $('activityFilterApp')?.addEventListener('change', ()=>{ APP_STATE.page=1; renderAppEvents(); });
-    $('sortApp')?.addEventListener('change', ()=>{ APP_STATE.page=1; renderAppEvents(); });
-    $('pageSizeApp')?.addEventListener('change', ()=>{ APP_STATE.page=1; renderAppEvents(); });
-    $('searchApp')?.addEventListener('input', ()=>{ APP_STATE.page=1; renderAppEvents(); });
-
-    // ---------- Init ----------
-    document.getElementById('yr').textContent = new Date().getFullYear();
-    updateAuthUI();
-
-    if(items.length === 0 && !isLoggedIn()) seedBudget();
-    else renderBudget();
-
-    renderDemoActivities();
-    renderSaved();
-    renderDashboard();
-    renderAppEvents();
-    handleRoute();
-  </script>
+})();
+</script>
 </body>
 </html>
